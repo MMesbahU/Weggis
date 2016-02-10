@@ -2,6 +2,8 @@
 
 Bioinformatics for Adaptation Genomics - [Winter School 2016](http://www.adaptation.ethz.ch/education/winter-school-2016.html)
 
+INFERENCE OF EVOLUTIONARY SIGNAL FROM SNP DATA
+Part 1: Detection of signatures of selection
 2nd March 2016
 
 ## Agenda
