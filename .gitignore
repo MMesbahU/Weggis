@@ -1,0 +1,5 @@
+*.txt
+*.bamlist
+Data/*
+Results/*
+
