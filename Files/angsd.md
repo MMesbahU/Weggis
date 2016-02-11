@@ -1,17 +1,14 @@
 
 # Brief tutorial on ANGSD
 
-input files \\
-how to build up a command line \\
-some examples on geno/snp calling \\
-intro on summary stats \\
-
-MAPPED DATA > FILTERING
-
-In this section, we will show how to perform a basic filtering of sites, after the reads have been mapped or aligned.
-
 For most of the examples, we will use the program [ANGSD](http://popgen.dk/wiki/index.php/ANGSD) (Analysis of Next Generation Sequencing Data) developed by Thorfinn Korneliussen and Anders Albrechtsen at the University of Copenhagen.
 More information about its rationale and implemented methods can be found [here](http://www.ncbi.nlm.nih.gov/pubmed/25420514).
+
+By the end of this tutorial you will learn:
+* input and output files
+* how to build up a command line
+* some examples on SNP and genotype calling
+* estimation of summary stats
 
 We will use 60 BAM files of human samples (of African, European, and Native American descent), a reference genome, and putative ancestral sequence.
 The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set.
@@ -36,7 +33,13 @@ REF=Data/hs37d5.fa.gz
 ANC=Data/hg19ancNoChr.fa.gz
 ```
 
-#### ANGSD
+----------------------
+
+**WORKFLOW**:
+
+... -> MAPPED DATA -> FILTERING
+
+In this section, we will show how to perform a basic filtering of sites, after the reads have been mapped or aligned.
 
 Here we will use ANGSD to analyse our data. To see a full list of options type
 ```
@@ -368,6 +371,100 @@ less -S Results/ALL.geno.gz
 ```
 
 For more details and examples on genotype calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/genocall.md)
+
+------------------------
+
+SUMMARY STATS
+
+.saf files
+
+**WORKFLOW**:
+
+FILTERED DATA > GENOTYPE AND SNP CALLING > POPULATION GENETICS (SFS)
+
+Another important aspect of data analysis for population genetics is the estimate of the Site Frequency Spectrum (SFS). SFS records the proportions of sites at different allele frequencies. It can be folded or unfolded, and the latter case implies the use of an outgroup species to define the ancestral state. SFS is informative on the demography of the population or on selective events (when estimated at a local scale).
+
+We use ANGSD to estimate SFS using on example dataset, using the methods described [here](http://www.ncbi.nlm.nih.gov/pubmed/22911679).
+Details on the implementation can be found [here](http://popgen.dk/angsd/index.php/SFS_Estimation).
+Briefly, from sequencing data one computes genotype likelihoods (as previously described).
+From these quantities ANGSD computes posterior probabilities of Sample Allele Frequency (SAF), for each site.
+Finally, an estimate of the SFS is computed.
+
+Sequence data -> Genotype likelihoods -> Posterior probabilities of allele frequencies -> SFS
+
+These steps can be accomplished in ANGSD using `-doSaf 1/2` options and the program `realSFS`.
+
+```
+angsd -doSaf
+...
+-doSaf          0
+        1: perform multisample GL estimation
+        2: use an inbreeding version
+        3: calculate genotype probabilities
+        4: Assume genotype posteriors as input (still beta)
+        -doThetas               0 (calculate thetas)
+        -underFlowProtect       0
+        -fold                   0 (deprecated)
+        -anc                    (null) (ancestral fasta)
+        -noTrans                0 (remove transitions)
+        -pest                   (null) (prior SFS)
+        -isHap                  0 (is haploid beta!)
+NB:
+          If -pest is supplied in addition to -doSaf then the output will then be posterior probability of the sample allelefrequency for each site
+```
+
+The SFS is typically computed for each population separately.
+We need to slightly modify the filtering options as now each population has 20 samples. So now we set `-minInd 10 -setMinDepth 70 -setMaxDepth 235`.
+Also, we are using all sites here to have more power in the estimation (alternatively, use `-sites sites.txt` if it goes too slow).
+Moreover, we want to estimate the unfolded SFS and we use a putative ancestral sequence to polarise our alleles (to ancestral and derived states).
+
+```
+for POP in LWK TSI PEL
+do
+        echo $POP
+        angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
+                -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+                -minMapQ 20 -minQ 20 -minInd 10 -setMinDepth 70 -setMaxDepth 235 -doCounts 1 \
+                -GL 1 -doSaf 1 &> /dev/null
+done
+```
+
+Have a look at the output file.
+```
+realSFS print Results/LWK.saf.idx | less -S
+```
+These values represent the sample allele frequency likelihoods at each site.
+This command will estimate the SFS for each population:
+
+```
+for POP in LWK TSI PEL
+do
+        echo $POP
+        realSFS Results/$POP.saf.idx 2> /dev/null > Results/$POP.sfs
+done
+```
+Let us plot the SFS for each pop using this simple R script.
+```
+Rscript Scripts/plotSFS.R Results/LWK.sfs
+evince Results/LWK.pdf
+```
+
+It is very useful to estimate a **multi-dimensional SFS**, for instance the joint SFS between 2 populations (2D).
+This can be used for making inferences on their divergence process (time, migration rate and so on).
+
+An important issue when doing this is to be sure that we are comparing the exactly same corresponding sites between populations.
+ANGSD does that automatically and considers only a set of overlapping sites.
+The 2D-SFS between LWK and TSI is computed with:
+
+Under the same rationale, summary statistics and indexes of nucleotide diversity can be calculated without relying on called genotypes in ANGSD.
+Briefly, expectations of such statistics are estimated from the sample allele frequency probabilities.
+
+Here we show a typical pipeline, assuming we have already estimate the SFS for each population (see above).
+The pipeline works as follow:
+
+-doSaf (likelihoods) -> misc/realSFS (SFS) -> -doSaf (posterior probabilities) -> -doThetas (summary statistics) -> misc/thetaStat (sliding windows)
+
+For more details and examples on summary statistics estimation with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/sfs.md)
 
 ------------------------
 
