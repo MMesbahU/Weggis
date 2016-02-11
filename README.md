@@ -38,13 +38,32 @@ Additional scripts are be provided in the `Scripts/` folder.
 
 ### Lecture
 
+Slides are available in [pdf]() and [pptx]() format.
+
 * Session 1 - The effect of selection on the genome + Methods to detect selection signals (positive, negative, balancing)
 
 * Session 2 - The problem of assessing significance + Critical discussion of case studies
 
 ### Practical
 
-* Session 3 - Genomic scan for selection from large-scale data set
+Session 3 - Genomic scan for selection from large-scale data set
+
+identification of allele frequency differentation between, with admixture assessment and quantification, from low-depth data: the case of FADS genetic variation in Native Americans
+
+* Basic [filtering](https://github.com/mfumagalli/Weggis/blob/master/Files/filtering.md)
+* [Population structure](https://github.com/mfumagalli/Weggis/blob/master/Files/explore.md)
+* Selection test based on [genetic differentiation](https://github.com/mfumagalli/Weggis/blob/master/Files/selection.md) on low-depth data
+* Assessing significance through [simulations](https://github.com/mfumagalli/Weggis/blob/master/Files/simulation.md)
+* Selection test based on [haplotype diversity](https://github.com/mfumagalli/Weggis/blob/master/Files/deep.md) on high-depth data
+
+#### Additional material
+
+This material provides some guidelines on how to perform SNP and genotype calling and estimate population genetics metrics using [ANGSD](http://popgen.dk/wiki/index.php/ANGSD), suitable for low-depth data.
+
+* Estimation of allele frequencies and [SNP calling](https://github.com/mfumagalli/WoodsHole/blob/master/Files/snpcall.md)
+* [Genotype calling](https://github.com/mfumagalli/WoodsHole/blob/master/Files/genocall.md)
+* Advanced methods to estimate [SFS](https://github.com/mfumagalli/WoodsHole/blob/master/Files/sfs.md)
+
 
 ## Credits
 
