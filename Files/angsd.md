@@ -4,11 +4,13 @@
 For most of the examples, we will use the program [ANGSD](http://popgen.dk/wiki/index.php/ANGSD) (Analysis of Next Generation Sequencing Data) developed by Thorfinn Korneliussen and Anders Albrechtsen at the University of Copenhagen.
 More information about its rationale and implemented methods can be found [here](http://www.ncbi.nlm.nih.gov/pubmed/25420514).
 
-By the end of this tutorial you will learn:
-* input and output files
+According to its website *ANGSD is a software for analyzing next generation sequencing data. The software can handle a number of different input types from mapped reads to imputed genotype probabilities. Most methods take genotype uncertainty into account instead of basing the analysis on called genotypes. This is especially useful for low and medium depth data. The software is written in C++ and has been used on large sample sizes. This program is not for manipulating BAM/CRAM files, but solely a tool to perform various kinds of analysis. We recommend the excellent program SAMtools for outputting and modifying bamfiles.*
+
+By the end of this short tutorial you will learn:
+* how ANGSD handles input and output files
 * how to build up a command line
-* some examples on SNP and genotype calling
-* estimation of summary stats
+* how to perform SNP and genotype calling
+* how to estimate summary stats taking data uncertainty into account.
 
 We will use 60 BAM files of human samples (of African, European, and Native American descent), a reference genome, and putative ancestral sequence.
 The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set.
@@ -25,7 +27,7 @@ NGSTOOLS=/data/Software/ngsTools
 NGSADMIX=/data/data/Software/NGSadmix/NGSadmix
 FASTME=/data/data/Software/fastme-2.1.4/src/fastme
 ```
-However, these paths have been sym-linked to your /usr/bin so they can be called by simply typing their name, e.g. `angsd`.
+However, if these paths have been sym-linked to your /usr/bin, they can be called by simply typing their name, e.g. `angsd`.
 
 If you downloaded the data using the provided script, this is what you should specify.
 ```
@@ -41,9 +43,9 @@ ANC=Data/hg19ancNoChr.fa.gz
 
 In this section, we will show how to perform a basic filtering of sites, after the reads have been mapped or aligned.
 
-Here we will use ANGSD to analyse our data. To see a full list of options type
+To see a full list of options in ANGSD type:
 ```
-angsd
+$ANGSD/angsd
 ```
 and you should see something like
 ```
@@ -81,9 +83,6 @@ Examples:
                 './angsd -bam list -GL 2 -doMaf 2 -out RES -doMajorMinor 1'
 ```
 
-
-We will see later of to perform SNP and genotype calling (and many other things) with ANGSD.
-
 ANGSD can accept several input files, as described [here](http://popgen.dk/angsd/index.php/Input):
 
 * BAM/CRAM
@@ -93,7 +92,7 @@ ANGSD can accept several input files, as described [here](http://popgen.dk/angsd
 
 #### Basic filtering post-mapping
 
-Here we show how ANGSD can also perform some basic filtering of the data.
+ANGSD can perform some basic filtering of the data.
 These filters are based on:
 
 * quality and depth, see [here](http://www.popgen.dk/angsd/index.php/Filters)
@@ -102,7 +101,7 @@ These filters are based on:
 
 If the input file is in BAM format, the possible options are:
 ```
-angsd -bam
+$ANGSD/angsd -bam
 ...
 ---------------
 parseArgs_bambi.cpp: bam reader:
@@ -143,10 +142,9 @@ For more details and examples on how to filtering data with ANGSD see [here](htt
 
 **WORKFLOW**:
 
-MAPPED DATA > FILTERING > SNP CALLING
+... > MAPPED DATA > FILTERING > SNP CALLING
 
 In this section, we will go through some examples on how to assign variable sites from BAM files, once the data has been filtered.
-We will show how to call SNPs with different methods, and we will compare their results.
 
 ### Estimating allele frequencies and calling SNPs
 
@@ -157,7 +155,7 @@ In other words, at each site we want to to estimate (or count) how many copies o
 ANGSD has an option to estimate **allele frequencies**:
 
 ```
-angsd -doMaf
+$ANGSD/angsd -doMaf
 ...
 -doMaf  0 (Calculate persite frequencies '.mafs.gz')
         1: Frequency (fixed major and minor)
@@ -183,7 +181,7 @@ NB These frequency estimators requires major/minor -doMajorMinor
 
 Therefore, the estimation of allele frequencies requires the specification of how to assign the major and minor alleles (if biallelic).
 ```
-angsd -doMajorMinor
+$ANGSD/angsd -doMajorMinor
 ...
         -doMajorMinor   0
         1: Infer major and minor from GL
@@ -195,9 +193,9 @@ angsd -doMajorMinor
         -skipTriallelic 0
 ```
 
-Finally, one needs to specify with genotype likelihood model to use.
+Finally, you need to specify which genotype likelihood model to use.
 ```
-angsd -GL
+$ANGSD/angsd -GL
 ...
         -GL=0:
         1: SAMtools
@@ -218,12 +216,12 @@ Filedumping:
         4: text version (10 log likes)  .glf.gz
 ```
 A description of these different implementation can be found [here](http://www.popgen.dk/angsd/index.php/Genotype_likelihoods).
-The GATK model refers to the first GATK paper (as seen in the lecture), SAMtools is somehow more sophisticated (non-independence of errors), SOAPsnp requires a reference sequence for recalibration of quality scores, SYK is error-type specific.
-For most applications and data, GATK and SAMtools models should give similar results and be preferred.
+The GATK model refers to the first GATK paper, SAMtools is somehow more sophisticated (non-independence of errors), SOAPsnp requires a reference sequence for recalibration of quality scores, SYK is error-type specific.
+For most applications and data, GATK and SAMtools models should give similar results.
 
 From these observations, our command line could be:
 ```
-angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
+$ANGSD/angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
         -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 210 -setMaxDepth 700 -doCounts 1 -sites sites.txt\
         -GL 1 -doMajorMinor 4 -doMaf 1 -skipTriallelic 1 &> /dev/null
@@ -233,14 +231,14 @@ where we specify:
 * -doMajorMinor 4: force the major allele to be the reference (the minor is inferred)
 * -doMaf 1: major and minor are fixed
 
-Which are the output files?
+What are the output files?
 ```
 ->"Results/ALL.arg"
 ->"Results/ALL.mafs.gz"
 ```
 `.args` file is a summary of all options used, while `.mafs.gz` file shows the allele frequencies computed at each site.
 
-Have a look at this file which contains estimates of **Minor Allele Frequency** (MAF) values.
+Have a look at this file which contains estimates of allele frequency values.
 ```
 zcat Results/ALL.mafs.gz | head
 ```
@@ -264,7 +262,7 @@ The first and second column indicate the position of each site, then we have maj
 
 We may be interested in looking at allele frequencies only for sites that are actually variable in our sample.
 Therefore we want to perform a **SNP calling**.
-There are several ways to call SNPs using ANGSD, for instance by using these options:
+There are two main ways to call SNPs using ANGSD with these options:
 ```
         -minMaf         0.000000        (Remove sites with MAF below)
         -SNP_pval       1.000000        (Remove sites with a pvalue larger)
@@ -273,15 +271,15 @@ Therefore we can consider assigning as SNPs sites whose estimated allele frequen
 
 As an illustration, let us call SNPs by computing:
  - genotype likelihoods using GATK method;
- - major and minor alleles from allele counts (you need to specify -doCounts 1; not recommended in many cases);
+ - major and minor alleles inferred from genotype likelihoods;
  - frequency from known major allele but unknown minor;
  - SNPs as those having MAF=>0.01.
 
 ```
-angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
+$ANGSD/angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
-        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 210 -setMaxDepth 700 -doCounts 1 -sites sites.txt \
-        -GL 2 -doMajorMinor 2 -doMaf 2 -skipTriallelic 1  \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 210 -setMaxDepth 700 -sites sites.txt \
+        -GL 2 -doMajorMinor 1 -doMaf 2 -skipTriallelic 1  \
         -minMaf 0.01 &> /dev/null
 ```
 
@@ -305,8 +303,6 @@ For more details and examples on SNP calling with ANGSD see [here](https://githu
 
 -----------------------
 
-Geno call?
-
 **WORKFLOW**:
 
 FILTERED DATA > SNP CALLING > GENOTYPE CALLING
@@ -317,7 +313,7 @@ We will use ANGSD (and SAMtools as additional material), and compare results usi
 We now see how to use ANGSD to call genotypes.
 The specific option is `-doGeno`:
 ```
-angsd -doGeno
+$ANGSD/angsd -doGeno
 ...
 -doGeno 0
         1: write major and minor
@@ -343,8 +339,7 @@ If we want to print the major and minor alleles as well then we set `-doGeno 3`.
 
 To calculate the posterior probability of genotypes we need to define a model.
 ```
-angsd -doPost
-
+$ANGSD/angsd -doPost
 ...
 -doPost 0       (Calculate posterior prob 3xgprob)
         1: Using frequency as prior
@@ -357,7 +352,7 @@ We will see later what to do when the assumption of HWE is not valid.
 A typical command for genotype calling assuming HWE is:
 
 ```
-angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
+$ANGSD/angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
         -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 210 -setMaxDepth 700 -doCounts 1 -sites sites.txt\
         -GL 1 -doMajorMinor 1 -doMaf 2 -skipTriallelic 1 \
@@ -374,15 +369,13 @@ For more details and examples on genotype calling with ANGSD see [here](https://
 
 ------------------------
 
-SUMMARY STATS
-
-.saf files
-
 **WORKFLOW**:
 
-FILTERED DATA > GENOTYPE AND SNP CALLING > POPULATION GENETICS (SFS)
+... > FILTERED DATA > GENOTYPE AND SNP CALLING > POPULATION GENETICS
 
-Another important aspect of data analysis for population genetics is the estimate of the Site Frequency Spectrum (SFS). SFS records the proportions of sites at different allele frequencies. It can be folded or unfolded, and the latter case implies the use of an outgroup species to define the ancestral state. SFS is informative on the demography of the population or on selective events (when estimated at a local scale).
+Another important aspect of data analysis for population genetics is the estimate of the Site Frequency Spectrum (SFS). 
+SFS records the proportions of sites at different allele frequencies. 
+It can be folded or unfolded, and the latter case implies the use of an outgroup species to define the ancestral state. SFS is informative on the demography of the population or on selective events (when estimated at a local scale).
 
 We use ANGSD to estimate SFS using on example dataset, using the methods described [here](http://www.ncbi.nlm.nih.gov/pubmed/22911679).
 Details on the implementation can be found [here](http://popgen.dk/angsd/index.php/SFS_Estimation).
@@ -395,7 +388,7 @@ Sequence data -> Genotype likelihoods -> Posterior probabilities of allele frequ
 These steps can be accomplished in ANGSD using `-doSaf 1/2` options and the program `realSFS`.
 
 ```
-angsd -doSaf
+$ANGSD/angsd -doSaf
 ...
 -doSaf          0
         1: perform multisample GL estimation
@@ -422,7 +415,7 @@ Moreover, we want to estimate the unfolded SFS and we use a putative ancestral s
 for POP in LWK TSI PEL
 do
         echo $POP
-        angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
+	$ANGSD/angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
                 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
                 -minMapQ 20 -minQ 20 -minInd 10 -setMinDepth 70 -setMaxDepth 235 -doCounts 1 \
                 -GL 1 -doSaf 1 &> /dev/null
@@ -431,30 +424,28 @@ done
 
 Have a look at the output file.
 ```
-realSFS print Results/LWK.saf.idx | less -S
+$ANGSD/misc/realSFS print Results/LWK.saf.idx | less -S
 ```
 These values represent the sample allele frequency likelihoods at each site.
-This command will estimate the SFS for each population:
 
+This command will estimate the SFS for each population:
 ```
 for POP in LWK TSI PEL
 do
         echo $POP
-        realSFS Results/$POP.saf.idx 2> /dev/null > Results/$POP.sfs
+        $ANGSD/misc/realSFS Results/$POP.saf.idx 2> /dev/null > Results/$POP.sfs
 done
 ```
-Let us plot the SFS for each pop using this simple R script.
+We can plot the SFS for each pop using this simple R script.
 ```
 Rscript Scripts/plotSFS.R Results/LWK.sfs
 evince Results/LWK.pdf
 ```
 
-It is very useful to estimate a **multi-dimensional SFS**, for instance the joint SFS between 2 populations (2D).
+Moreover, ANGSD can estimate a multi-dimensional SFS, for instance the joint SFS between 2 populations (2D).
 This can be used for making inferences on their divergence process (time, migration rate and so on).
 
-An important issue when doing this is to be sure that we are comparing the exactly same corresponding sites between populations.
-ANGSD does that automatically and considers only a set of overlapping sites.
-The 2D-SFS between LWK and TSI is computed with:
+-----------------------------
 
 Under the same rationale, summary statistics and indexes of nucleotide diversity can be calculated without relying on called genotypes in ANGSD.
 Briefly, expectations of such statistics are estimated from the sample allele frequency probabilities.
@@ -464,7 +455,10 @@ The pipeline works as follow:
 
 -doSaf (likelihoods) -> misc/realSFS (SFS) -> -doSaf (posterior probabilities) -> -doThetas (summary statistics) -> misc/thetaStat (sliding windows)
 
+We will talk about it during the exercise on detecting selection.
+
 For more details and examples on summary statistics estimation with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/sfs.md)
+
 
 ------------------------
 
