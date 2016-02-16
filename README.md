@@ -12,7 +12,7 @@ Part 1: Detection of signatures of selection
 
 To download and access all the material in this web page use [git](http://git-scm.com/):
 ```
-git clone https://github.com/mfumagalli/Weggis
+git clone https://github.com/mfumagalli/Weggis.git
 cd Weggis
 # git pull # to be sure you have the latest version, if so you should see "Already up-to-date."
 ```
