@@ -32,8 +32,8 @@ However, if these paths have been sym-linked to your /usr/bin, they can be calle
 
 If you downloaded the data using the provided script, this is what you should specify.
 ```
-REF=Data/hs37d5.fa.gz
-ANC=Data/hg19ancNoChr.fa.gz
+REF=Data/hs37d5.fa
+ANC=Data/hg19ancNoChr.fa
 ```
 
 ----------------------
@@ -88,52 +88,12 @@ Examples:
                 './angsd -bam list -GL 2 -doMaf 2 -out RES -doMajorMinor 1'
 ```
 
-
-#### Basic filtering post-mapping
-
-ANGSD can perform some basic filtering of the data.
+ANGSD can also perform some basic filtering of the data.
 These filters are based on:
 
 * quality and depth, see [here](http://www.popgen.dk/angsd/index.php/Filters)
 * SNP quality, see [here](http://popgen.dk/angsd/index.php/SnpFilters)
 * sites, see [here](http://popgen.dk/angsd/index.php/Sites)
-
-If the input file is in BAM format, the possible options are:
-```
-$ANGSD/angsd -bam
-...
----------------
-parseArgs_bambi.cpp: bam reader:
-        -bam/-b         (null)  (list of BAM/CRAM files)
-        -i              (null)  (Single BAM/CRAM file)
-        -r              (null)  Supply a single region in commandline (see examples below)
-        -rf             (null)  Supply multiple regions in a file (see examples below)
-        -remove_bads    1       Discard 'bad' reads, (flag >=256)
-        -uniqueOnly     0       Discards reads that doesnt map uniquely
-        -show           0       Mimic 'samtools mpileup' also supply -ref fasta for printing reference column
-        -minMapQ        0       Discard reads with mapping quality below
-        -minQ           13      Discard bases with base quality below
-        -trim           0       Number of based to discard at both ends of the reads
-        -only_proper_pairs 1    Only use reads where the mate could be mapped
-        -C              0       adjust mapQ for excessive mismatches (as SAMtools), supply -ref
-        -baq            0       adjust qscores around indels (as SAMtools), supply -ref
-        -checkBamHeaders 1      Exit if difference in BAM headers
-        -doCheck        1       Keep going even if datafile is not suffixed with .bam/.cram
-        -downSample     0.000000        Downsample to the fraction of original data
-        -nReads         50      Number of reads to pop from each BAM/CRAMs
-        -minChunkSize   250     Minimum size of chunk sent to analyses
-
-Examples for region specification:
-                chr:            Use entire chromosome: chr
-                chr:start-      Use region from start to end of chr
-                chr:-stop       Use region from beginning of chromosome: chr to stop
-                chr:start-stop  Use region from start to stop from chromosome: chr
-                chr:site        Use single site on chromosome: chr
-```
-Some basic filtering consists in removing, for instance, read with low quality and/or with multiple hits, and this can be achieved using the parameters ```-uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1```.
-
-Also, you may want to remove reads with low mapping quality and sites with low quality or covered by few reads (low depth).
-Under these circumnstances, the assignment of individual genotypes and SNPs is problematics, and can lead to errors.
 
 For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/filtering.md)
 
@@ -141,11 +101,9 @@ For more details and examples on how to filtering data with ANGSD see [here](htt
 
 **WORKFLOW**:
 
-... > MAPPED DATA > FILTERING > SNP CALLING
+... -> MAPPED DATA -> FILTERING -> SNP CALLING
 
-In this section, we will go through some examples on how to assign variable sites from BAM files, once the data has been filtered.
-
-### Estimating allele frequencies and calling SNPs
+To illutstrate how to build a command line in ANGSD, we will go through some examples on how to assign variable sites from BAM files, once the data has been filtered.
 
 One of the first quantities of interest is the identification of which sites are variable, or polymorphic, in our sample.
 This search can be firstly translated in the estimation of the allele frequency for each site.
@@ -218,15 +176,22 @@ A description of these different implementation can be found [here](http://www.p
 The GATK model refers to the first GATK paper, SAMtools is somehow more sophisticated (non-independence of errors), SOAPsnp requires a reference sequence for recalibration of quality scores, SYK is error-type specific.
 For most applications and data, GATK and SAMtools models should give similar results.
 
-From these observations, our command line could be:
+We are going to perform this analysis only on a subset of sites. 
+Typically you can achieve these by setting -rf option in ANGSD but since our BAM files do not have a proper header, we have to specify each site we want to analyse, and create a BED file. This file can be generated with (knowning that our region is on chromosome 11 from 61M to 62M) and indexed as:
+```
+Rscript -e 'write.table(cbind(rep(11,100000), seq(61000001,61100000,1)), file="sites.txt", sep="\t", quote=F, row.names=F, col.names=F)'
+$ANGSD/angsd sites index sites.txt &> /dev/null
+```
+
+Our command line could be:
 ```
 $ANGSD/angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
-        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 210 -setMaxDepth 700 -doCounts 1 -sites sites.txt\
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 50 -setMaxDepth 200 -doCounts 1 -sites sites.txt\
         -GL 1 -doMajorMinor 4 -doMaf 1 -skipTriallelic 1 &> /dev/null
 ```
 where we specify:
-* -GL 1: genotype likelihood model is in SAMtools
+* -GL 1: genotype likelihood model as in SAMtools
 * -doMajorMinor 4: force the major allele to be the reference (the minor is inferred)
 * -doMaf 1: major and minor are fixed
 
@@ -241,21 +206,24 @@ Have a look at this file which contains estimates of allele frequency values.
 ```
 zcat Results/ALL.mafs.gz | head
 ```
-and you should see
+and you may see something like
 ```
-chromo  position        major   minor   ref     knownEM nInd
-11      61005556        C       A       C       0.000001        49
-11      61005584        C       A       C       0.000001        49
-11      61005597        C       T       C       0.001915        49
-11      61005994        A       C       A       0.000001        46
-11      61005995        G       A       G       0.000001        46
-11      61005996        C       A       C       0.000001        46
-11      61005997        C       A       C       0.000001        46
-11      61005998        T       A       T       0.000001        46
-11      61005999        G       A       G       0.000000        46
+chromo	position	major	minor	ref	knownEM	nInd
+11	61005992	C	A	C	0.000003	32
+11	61005993	C	A	C	0.000003	33
+11	61005994	A	C	A	0.000002	33
+11	61005995	G	A	G	0.000002	33
+11	61005996	C	A	C	0.000002	33
+11	61005997	C	A	C	0.000004	32
+11	61005998	T	A	T	0.000005	33
+11	61005999	G	A	G	0.000005	33
+11	61006000	G	A	G	0.000005	34
 ```
 
 The first and second column indicate the position of each site, then we have major and minor alleles (based on the reference sequence), the estimated allele frequency, and the number of samples with data.
+
+CHECKED UNTIL HERE!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 ------------
 
@@ -286,16 +254,16 @@ You can have a look at the results:
 ```
 zcat Results/ALL.mafs.gz | head
 
-chromo  position        major   minor   ref     unknownEM       nInd
-11      61006040        G       A       G       0.010250        53
-11      61007218        T       C       C       0.444894        58
-11      61007710        C       G       C       0.303258        59
-11      61007781        A       G       G       0.010488        59
-11      61007786        G       T       T       0.025118        59
-11      61007804        T       C       C       0.329408        55
-11      61014040        C       A       C       0.051804        60
-11      61014194        C       T       C       0.014751        59
-11      61014749        A       T       A       0.010908        60
+chromo	position	major	minor	ref	unknownEM	nInd
+11	61006040	G	A	G	0.015298	41
+11	61006070	G	A	G	0.017361	41
+11	61007659	T	G	T	0.014695	31
+11	61007783	A	C	A	0.013398	38
+11	61007804	T	C	T	0.098128	37
+11	61007900	A	C	A	0.011518	40
+11	61008088	T	A	T	0.011197	43
+11	61008109	C	T	C	0.014019	37
+11	61013836	C	A	C	0.020777	40
 ```
 
 For more details and examples on SNP calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/snpcall.md)

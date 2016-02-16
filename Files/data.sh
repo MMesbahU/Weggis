@@ -25,18 +25,16 @@ ls Data/PEL.BAMs/*.bam > PEL.bamlist
 # download ancestral sequence
 echo Downloading and processing ancestral sequence...
 wget http://dna.ku.dk/~thorfinn/hg19ancNoChr.fa.gz &>/dev/null
-mv *.fa.gz Data/.
-# zcat Data/hg19ancNoChr.fa.gz > Data/ancHg19.fa
-$SAMTOOLS faidx Data/hg19ancNoChr.fa.gz
+gunzip hg19ancNoChr.fa.gz 
+$SAMTOOLS faidx hg19ancNoChr.fa
+mv hg19ancNoChr.* Data/.
 
 # download reference sequence
 echo Downloading and processing reference sequence...
 wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz &>/dev/null
-gunzip hs37d5.fa.gz &>/dev/null
-echo Bgzipping... this may take some time...
-bgzip hs37d5.fa
-$SAMTOOLS faidx hs37d5.fa.gz
-mv hs37d5* Data/.
+gunzip hs37d5.fa.gz
+$SAMTOOLS faidx hs37d5.fa
+mv hs37d5.* Data/.
 
 echo Done!
 ls -lh Data/* > Data/download.log
