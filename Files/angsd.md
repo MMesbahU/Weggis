@@ -12,8 +12,9 @@ By the end of this short tutorial you will learn:
 * how to perform SNP and genotype calling
 * how to estimate summary stats taking data uncertainty into account.
 
-We will use 60 BAM files of human samples (of African, European, and Native American descent), a reference genome, and putative ancestral sequence.
-The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set.
+Again, we will use 60 BAM files of human samples (of African, European, and Native American descent), a reference genome, and putative ancestral sequence.
+The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set, encompassing the FADS gene family.
+Also, to make things more interesting, we have downsampled our data to an average mean depth of 2X.
 
 ## Preparation
 
@@ -41,7 +42,11 @@ ANC=Data/hg19ancNoChr.fa.gz
 
 ... -> MAPPED DATA -> FILTERING
 
-In this section, we will show how to perform a basic filtering of sites, after the reads have been mapped or aligned.
+ANGSD can accept several input files, as described [here](http://popgen.dk/angsd/index.php/Input):
+* BAM/CRAM
+* Pileup
+* Genotype likelihood/probability files
+* VCF
 
 To see a full list of options in ANGSD type:
 ```
@@ -83,12 +88,6 @@ Examples:
                 './angsd -bam list -GL 2 -doMaf 2 -out RES -doMajorMinor 1'
 ```
 
-ANGSD can accept several input files, as described [here](http://popgen.dk/angsd/index.php/Input):
-
-* BAM/CRAM
-* Pileup
-* Genotype likelihood/probability files
-* VCF
 
 #### Basic filtering post-mapping
 
