@@ -22,7 +22,6 @@ done
 
 echo Downloading BAM files...
 # download and index bams
-#mkdir Data
 for POP in LWK TSI PEL;
 do
 	mkdir Data/$POP.BAMs

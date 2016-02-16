@@ -16,7 +16,6 @@ git clone https://github.com/mfumagalli/Weggis.git
 cd Weggis
 # git pull # to be sure you have the latest version, if so you should see "Already up-to-date."
 ```
-`Data` and `Results` folder will be created automatically inside the `Weggis` folder.
 
 ## Data
 
@@ -30,6 +29,7 @@ You need to have 'samtools', 'bgzip' and 'Rscript' installed in your /usr/bin to
 ```
 bash Files/data.sh
 ```
+`Data` and `Results` folder will be created automatically inside the `Weggis` folder.
 Data will be saved (but not pushed to git main repository) in `Data` folder.
 
 Additional scripts are be provided in the `Scripts/` folder.

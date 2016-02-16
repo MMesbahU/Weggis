@@ -6,6 +6,9 @@
 SAMTOOLS=samtools
 echo Is this your path to samtools? $SAMTOOLS
 
+mkdir Data
+mkdir Results
+
 # get unrelated samples iDs
 Rscript Scripts/getUnrelated.R
 
