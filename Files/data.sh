@@ -18,6 +18,7 @@ bash Scripts/getBams.sh
 
 # create file with list of BAMs
 ls Data/LWK.BAMs/*.bam Data/TSI.BAMs/*.bam Data/CHB.BAMs/*.bam Data/PEL.BAMs/*.bam > ALL.bamlist
+ls Data/LWK.BAMs/*.bam Data/TSI.BAMs/*.bam Data/PEL.BAMs/*.bam > ALL_noCHB.bamlist
 ls Data/LWK.BAMs/*.bam > LWK.bamlist
 ls Data/TSI.BAMs/*.bam > TSI.bamlist
 ls Data/CHB.BAMs/*.bam > CHB.bamlist

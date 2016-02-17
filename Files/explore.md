@@ -1,10 +1,13 @@
 
-Brief intro on ANGSD
-
+In this section we will see how to have a general description of the genetic structure our our samples.
+We will use ANGSD (and related software), which is suitable for dealing with low-depth sequencing data.
 
 --------------------
 
-1) Investigate population structure our samples: PEL,(Peruvians), TSI (Europeans), LWK (Africans), and CHB (East Asians).
+### Population structure
+
+We want to investigate the population structure our samples: PEL,(Peruvians), TSI (Europeans), LWK (Africans), and CHB (East Asians).
+In particular we are interested to assess whether our PEL samples are genetically admixed with TSI and LWK.
 
 One solution would be to perform a Principal Component Analysis (PCA), Multidimensional Scaling (MDS) or some clustering based on genetic distances among samples.
 Then we can check whether some PEL fall within EUR/LWK or all PEL form a separate clade.
@@ -147,59 +150,81 @@ These filters are based on:
 
 For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/filtering.md)
 
+Let us build our command line.
+Recall what we defined for 
+
 As an illustration,...
 
 ```
-# Assuming HWE, without filtering based on probabilities, with SNP calling
-$ANGSD/angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
+$ANGSD/angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
-        -minMapQ 20 -minQ 20 -minInd 40 -setMinDepth 40 -setMaxDepth 400 -doCounts 1 \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
         -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
         -SNP_pval 1e-3 \
-        -doGeno 8 -doPost 1 &> /dev/null
-```
+        -doGeno 32 -doPost 1 &> /dev/null
 
-Record how many sites we retrieve.
-```
+gunzip Results/ALL.geno.gz
+
 N_SITES=`zcat Results/ALL.mafs.gz | tail -n+2 | wc -l`
 echo $N_SITES
-```
 
-For plotting purposes, we now create a file with labels indicating the population of interest for each sample.
-```
-Rscript -e 'cat(paste(rep(c("LWK","TSI","CHB","PEL"),each=20), rep(1:20, 4), sep="_"), sep="\n", file="pops.label")'
-cat pops.label
-```
+$NGSTOOLS/ngsPopGen/ngsCovar -probfile Results/ALL.geno -outfile Results/ALL.covar -nind 60 -nsites $N_SITES -call 0 -norm 0 &> /dev/null
 
-With [ngsDist](https://github.com/fgvieira/ngsDist) we can compute pairwise genetic distances without relying on individual genotype calls.
-```
-$NGSDIST/ngsDist -verbose 1 -geno Results/ALL.geno.gz -probs -n_ind 80 -n_sites $N_SITES -labels pops.label -o Results/ALL.dist -n_threads 4
-less -S Results/ALL.dist
-```
+Rscript -e 'write.table(cbind(seq(1,60),rep(1,60),c(rep("LWK",20),rep("TSI",20),rep("PEL",20))), row.names=F, sep=" ", col.names=c("FID","IID","CLUSTER"), file="Results/ALL.clst", quote=F)'
 
-From these distances, we can perform a MDS analysis and investigate the population genetic structure of our samples.
+Rscript $NGSTOOLS/scripts/plotPCA.R -i Results/ALL.covar -c 1-2 -a Results/ALL.clst -o Results/ALL.pca.pdf
 
-N_SAMPLES=80
-tail -n +3 Data/ALL.dist | head -n $N_SAMPLES | Rscript --vanilla --slave Scripts/get_MDS.R --no_header --data_symm -n 4 -m "mds" -o Data/ALL.mds
+evince Results/ALL.pca.pdf
 
-
-We can visualise the pairwise genetic distances in form of a tree (in Newick format).
-```
-$FASTME -D 1 -i Results/ALL.dist -o Results/ALL.tree -m b -n b &> /dev/null
-cat Results/ALL.tree
-```
-
-We can some R packages to plot the resulting tree.
-```
-Rscript -e 'library(ape); library(phangorn); pdf(file="Results/ALL.tree.pdf"); plot(read.tree("Results/ALL.tree"), cex=0.5); dev.off();' &> /dev/null
-evince Results/ALL.tree.pdf
 ```
 
 Therefore, PEL samples appear very close to EUR.
 The next step would be to compute admixture proportions in order to select a subset of putative Native American (unadmixed) samples.
 
+OPTIONAL
+
+An alternative approach would be to compute genetic distances first, and then perform a MDS on those.
+Here the command lines needed to perform such tasks.
+
+```
+# Assuming HWE, without filtering based on probabilities, with SNP calling
+$ANGSD/angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
+        -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
+        -SNP_pval 1e-3 \
+        -doGeno 8 -doPost 1 &> /dev/null
+
+#Record how many sites we retrieve.
+N_SITES=`zcat Results/ALL.mafs.gz | tail -n+2 | wc -l`
+echo $N_SITES
+
+#For plotting purposes, we now create a file with labels indicating the population of interest for each sample.
+Rscript -e 'cat(paste(rep(c("LWK","TSI","PEL"),each=20), rep(1:20, 3), sep="_"), sep="\n", file="pops.label")'
+cat pops.label
+
+#With [ngsDist](https://github.com/fgvieira/ngsDist) we can compute pairwise genetic distances without relying on individual genotype calls.
+N_SAMPLES=60
+$NGSDIST/ngsDist -verbose 1 -geno Results/ALL.geno.gz -probs -n_ind $N_SAMPLES -n_sites $N_SITES -labels pops.label -o Results/ALL.dist -n_threads 4
+less -S Results/ALL.dist
+
+#From these distances, we can perform a MDS analysis and investigate the population genetic structure of our samples.
+tail -n +3 Results/ALL.dist | head -n $N_SAMPLES | Rscript --vanilla --slave Scripts/get_MDS.R --no_header --data_symm -n 4 -m "mds" -o Results/ALL.mds
+
+#We can visualise the pairwise genetic distances in form of a tree (in Newick format).
+$FASTME -D 1 -i Results/ALL.dist -o Results/ALL.tree -m b -n b &> /dev/null
+cat Results/ALL.tree
+
+#We can some R packages to plot the resulting tree.
+Rscript -e 'library(ape); library(phangorn); pdf(file="Results/ALL.tree.pdf"); plot(read.tree("Results/ALL.tree"), cex=0.5); dev.off();' &> /dev/null
+evince Results/ALL.tree.pdf
+```
+
 ------------------------
-2) Compute admixture proportions across samples.
+
+### ADDITIONAL MATERIAL
+
+### Compute admixture proportions across samples
 
 We use ngsAdmix, which again works on genotype probabilities and not on individual calls.
 This is suitable for low-depth data.
@@ -207,9 +232,9 @@ This is suitable for low-depth data.
 ngsAdmix requires genotype likelihoods in BEAGLE format as input.
 We can compute these quantities with ANGSD with `-doGlf 2`.
 ```
-angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
+$ANGSD/angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
-        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 210 -setMaxDepth 700 -doCounts 1 \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
         -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
         -SNP_pval 1e-3 \
         -doGlf 2 &> /dev/null
@@ -219,21 +244,21 @@ We assume 3 ancestral populations (Europeans, Africans and Native Americans) mak
 Therefore we compute admixture proportions with 3 ancestral components.
 ```
 K=3
-NGSadmix -likes Results/ALL.beagle.gz -K $K -outfiles Results/ALL.admix.K$K -P 4 -minMaf 0.02
+$NGSADMIX -likes Results/ALL.beagle.gz -K $K -outfiles Results/ALL.admix.K$K -P 4 -minMaf 0.02
 ```
 
 Combine samples IDs with admixture proportions and inspect the results.
 ```
-paste ALL.bamlist Results/ALL.admix.K$K.qopt > Results/ALL.admix.K$K.txt
+paste ALL_noCHB.bamlist Results/ALL.admix.K$K.qopt > Results/ALL.admix.K$K.txt
 less -S Results/ALL.admix.K$K.txt
 ```
 
 From these quantities we can extract how many samples (and which ones) have a high proportion of Native American ancestry (e.g. >0.90).
 We can also plot the individual ancestral proportions for PEL samples.
 We need to specify the order of ancestral populations in the admixture file `Results/ALL.admix.K$K.txt`.
-In my case these are PEL TSI LWK
+In my case these are PEL LWK TSI
 ```
-Rscript Scripts/getUnadmixed.R 0.90 PEL TSI LWK
+Rscript Scripts/getUnadmixed.R 0.90 PEL LWK TSI
 ```
 Inspect the results.
 ```
@@ -242,7 +267,7 @@ evince Results/ALL.admix.PEL.pdf
 ```
 
 Now we have a subset of putative Native American samples.
-We can calculate allele frequencies for only these samples.
+Then, we could perform all analyses considering only these samples.
 
 ------------------------
 
