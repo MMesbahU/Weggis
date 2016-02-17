@@ -1,8 +1,8 @@
 
 
-1) Investigate population structure (or clustering) of PEL samples (Peruvians), EUR (Europeans) and LWK (Africans).
+1) Investigate population structure our samples: PEL,(Peruvians), TSI (Europeans), LWK (Africans), and CHB (East Asians).
 
-One solution would be to perform a PCA, MDS or some clustering based on genetic distances among samples.
+One solution would be to perform a Principal Component Analysis (PCA), Multidimensional Scaling (MDS) or some clustering based on genetic distances among samples.
 Then we can check whether some PEL fall within EUR/LWK or all PEL form a separate clade.
 
 First, compute genotype posterior probabilities for all samples.

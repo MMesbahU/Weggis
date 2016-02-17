@@ -14,7 +14,7 @@ Rscript Scripts/getUnrelated.R
 
 # download BAM files
 bash Scripts/getBams.sh
-# this creates files and folders in Data/PEL.BAMs/* and TSI and LWK
+# this creates files and folders in Data/PEL.BAMs/* and TSI and LWK and CHB
 
 # create file with list of BAMs
 ls Data/LWK.BAMs/*.bam Data/TSI.BAMs/*.bam Data/PEL.BAMs/*.bam > ALL.bamlist

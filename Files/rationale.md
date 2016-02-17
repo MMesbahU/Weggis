@@ -13,6 +13,7 @@ FADS gene have been found to be under positive selection in several human popula
 Interestingly, selection seems to act on different genes and variants within FADS in these populations.
 
 Selection acting on FADS genes in Inuit was estimated to start 20k years ago, possibly predating the split between the ancestors of Inuit and Native Americans.
+Studies have also reported high allele frequency for some of these FADS variants in Latin American populations.
 
 *HYPOTHESIS*
 
@@ -22,14 +23,18 @@ If so, is selection acting on the same variants as in Inuit?
 
 Can we test which haplotypes selection (if any) is acting on?
 
+*CHALLENGES*
+- Admixed population
+- Low-depth sequencing data
+
 *PLAN OF ACTION*
 
-- Retrieve genomic data for 1000 Genomes Project for Africans, Europeans and Americans (low-depth)
-- Check population structure of American samples relating to Europeans and Africans [optional]
+- Retrieve genomic data for 1000 Genomes Project for Africans, Europeans, East Asians and Americans (low-depth)
+- Investigate population structure of American samples relating to Europeans and Africans [optional]
 - Select individuals with high Native American ancestry [optional]
+- Perfom a sliding windows scan based on allele frequency differentiation and nucleotide diversity
 - Compute allele frequencies for SNPs of interest in Native Americans, Europeans and Africans
-- Perfom a sliding windows scan based on allele frequency differentiation
-- Assess significance through simulations
+- Assess statistical significance through simulations
 - Test for extended haplotype homozygoisty based on high-depth sequencing data
 
 ------------------------
