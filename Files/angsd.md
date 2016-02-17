@@ -12,7 +12,7 @@ By the end of this short tutorial you will learn:
 * how to perform SNP and genotype calling
 * how to estimate summary stats taking data uncertainty into account.
 
-Again, we will use 60 BAM files of human samples (of African, European, and Native American descent), a reference genome, and putative ancestral sequence.
+Again, we will use 80 BAM files of human samples (of African, European, East Asian, and Native American descent), a reference genome, and putative ancestral sequence.
 The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set, encompassing the FADS gene family.
 Also, to make things more interesting, we have downsampled our data to an average mean depth of 2X.
 
@@ -24,9 +24,9 @@ As an example these are my paths.
 ANGSD=/data/data/Software/angsd
 SAMTOOLS=/data/data/Software/samtools-1.3
 NGSDIST=/data/Software/ngsDist
-NGSTOOLS=/data/Software/ngsTools
+#NGSTOOLS=/data/Software/ngsTools
 NGSADMIX=/data/data/Software/NGSadmix/NGSadmix
-FASTME=/data/data/Software/fastme-2.1.4/src/fastme
+#FASTME=/data/data/Software/fastme-2.1.4/src/fastme
 ```
 However, if these paths have been sym-linked to your /usr/bin, they can be called by simply typing their name, e.g. `angsd`.
 
@@ -183,11 +183,11 @@ Rscript -e 'write.table(cbind(rep(11,100000), seq(61000001,61100000,1)), file="s
 $ANGSD/angsd sites index sites.txt &> /dev/null
 ```
 
-Our command line could be:
+Our command line would be:
 ```
 $ANGSD/angsd -P 4 -b ALL.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
-        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 50 -setMaxDepth 200 -doCounts 1 -sites sites.txt\
+        -minMapQ 20 -minQ 20 -minInd 40 -setMinDepth 40 -setMaxDepth 400 -doCounts 1 -sites sites.txt \
         -GL 1 -doMajorMinor 4 -doMaf 1 -skipTriallelic 1 &> /dev/null
 ```
 where we specify:
