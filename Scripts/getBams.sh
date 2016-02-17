@@ -2,7 +2,7 @@
 echo Retrieving file names...
 NS=20
 # get IDs 
-for POP in LWK TSI PEL;
+for POP in LWK TSI CHB PEL;
 do
 
 	INPUT=$POP.txt
@@ -22,7 +22,7 @@ done
 
 echo Downloading BAM files...
 # download and index bams
-for POP in LWK TSI PEL;
+for POP in LWK TSI CHB PEL;
 do
 	mkdir Data/$POP.BAMs
 	echo $POP

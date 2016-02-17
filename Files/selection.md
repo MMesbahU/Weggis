@@ -1,4 +1,14 @@
 
+
+$ANGSD/angsd -b $BAM/LWK_unadm.txt -anc $ANC -minInd 10 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -out Data/LWK -doSaf 1 -GL 1 -doMajorMinor 5 -doMaf 2
+$ANGSD/angsd -b $BAM/TSI_unadm.txt -anc $ANC -minInd 10 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -out Data/TSI -doSaf 1 -GL 1 -doMajorMinor 5 -doMaf 2
+$ANGSD/angsd -b $BAM/CHB_unadm.txt -anc $ANC -minInd 10 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -out Data/CHB -doSaf 1 -GL 1 -doMajorMinor 5 -doMaf 2
+$ANGSD/angsd -b $BAM/PEL_unadm.txt -anc $ANC -minInd 10 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -out Data/PEL -doSaf 1 -GL 1 -doMajorMinor 5 -doMaf 2
+
+
+
+
+
 3) Estimate allele frequencies for SNPs in FADS genes of interest
 
 In ANGSD we can restrict our analyses on a subset of positions of interest using the `-sites` option.

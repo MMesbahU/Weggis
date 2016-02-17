@@ -5,13 +5,9 @@ fin="Files/20130606_g1k.ped"
 
 sam=read.table(fin, stringsAsFac=F, head=T, sep="\t")
 
-#table(sam$Relationship)
-
-#NSAMPLES=20
-
 #pops to extract are
-# LWK TSI PEL
-pops=c("LWK", "TSI", "PEL")
+# LWK TSI CHB PEL
+pops=c("LWK", "TSI", "CHB", "PEL")
 
 cat("Written these files: ")
 for (pop in pops) {
