@@ -50,7 +50,7 @@ Also, we want to estimate the unfolded SFS and we use a putative ancestral seque
 for POP in LWK TSI CHB PEL
 do
         echo $POP
-        angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
+        $ANGSD/angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
 		-uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
 		-minMapQ 20 -minQ 20 -minInd 10 -setMinDepth 10 -setMaxDepth 200 -doCounts 1 \
 		-GL 1 -doSaf 1 &> /dev/null
@@ -59,7 +59,7 @@ done
 
 Have a look at the output file.
 ```
-realSFS print Results/PEL.saf.idx | less -S
+$ANGSD/misc/realSFS print Results/PEL.saf.idx | less -S
 ```
 These values represent the sample allele frequency likelihoods at each site, as seen during the lecture.
 
@@ -67,7 +67,7 @@ The next step would be to use these likelihoods and estimate the overall SFS.
 This is achieved by the program `realSFS`.
 
 ```
-realSFS
+$ANGSD/misc/realSFS
 	-> ---./realSFS------
 	-> EXAMPLES FOR ESTIMATING THE (MULTI) SFS:
 
@@ -103,32 +103,36 @@ This command will estimate the SFS for each population:
 for POP in LWK TSI CHB PEL
 do
         echo $POP
-        realSFS Results/$POP.saf.idx 2> /dev/null > Results/$POP.sfs
+        $ANGSD/misc/realSFS Results/$POP.saf.idx 2> /dev/null > Results/$POP.sfs
 done
+```
+
+Have a look at the output file:
+```
+cat Results/PEL.sfs
+```
+How many values do you expect?
+```
+awk -F' ' '{print NF; exit}' Results/PEL.sfs 
 ```
 
 OPTIONAL
 
-How many values do you expect?
-```
-cat Results/LWK.sfs
-awk -F' ' '{print NF; exit}' Results/LWK.sfs 
-```
-
 Let us plot the SFS for each pop using this simple R script.
 ```
-Rscript Scripts/plotSFS.R Results/PEL.sfs
-evince Results/PEL.pdf
-
+Rscript Scripts/plotSFS.R Results/LWK.sfs Results/TSI.sfs Results/CHB.sfs Results/PEL.sfs
+evince Results/LWK_TSI_CHB_PEL.pdf
+```
 Do they behave like expected? 
 Which population has more SNPs?
 Which population has a higher proportion of common (not rare) variants?
+Why is it bumpy?
 
 It is sometimes convenient to generate bootstrapped replicates of the SFS, by sampling with replacements genomic segments.
 This could be used for instance to get confidence intervals when using the SFS for demographic inferences (as you may seen in the next days).
 This can be achieved in ANGSD using:
 ```
-realSFS Results/PEL.saf.idx -bootstrap 10  2> /dev/null > Results/PEL.boots.sfs
+$ANGSD/misc/realSFS Results/PEL.saf.idx -bootstrap 10  2> /dev/null > Results/PEL.boots.sfs
 cat Results/PEL.boots.sfs
 ```
 This command may take some time.
@@ -151,7 +155,7 @@ The 2D-SFS between all populations and PEL are computed with:
 for POP in LWK TSI CHB
 do
         echo $POP
-	realSFS -P 4 Results/$POP.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/$POP.PEL.sfs
+	$ANGSD/misc/realSFS -P 4 Results/$POP.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/$POP.PEL.sfs
 done
 ```
 
@@ -168,16 +172,36 @@ evince Results/LWK.PEL.sfs.pdf
 You can even estimate SFS with higher order of magnitude.
 This command may take some time.
 ```
-realSFS -P 4 Results/LWK.saf.idx Results/TSI.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/LWK.TSI.PEL.sfs
+$ANGSD/misc/realSFS -P 4 Results/LWK.saf.idx Results/TSI.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/LWK.TSI.PEL.sfs
 ```
 
 ------------------------------------
 
-PBS
-#prepare the fst for easy analysis etc
-./misc/realSFS fst index pop1.saf.idx pop2.saf.idx pop3.saf.idx -sfs pop1.pop2.ml -sfs pop1.pop3.ml -sfs pop2.pop3.ml -fstout here
+Here we are going to calculate allele frequency differentiation using the PBS (population branch statistic) metric.
+Again, we can achieve this by avoid genotype calling using ANGSD.
+From the sample allele frequencies likelihoods (.saf files) we can estimate PBS using the following pipeline.
 
-../misc/realSFS fst stats2 here.fst.idx -win 50000 -step 10000 >slidingwindow
+Note that here we use the previously calculated SFS as prior information.
+Also, PEL is our target population, while CHB and TSI are reference populations.
+Therefore, we need to compute also the 2D-SFS between TSI and CHB and PEL (if not already done):
+```
+for POP in TSI CHB
+do
+        $ANGSD/misc/realSFS -P 4 Results/$POP.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/$POP.PEL.sfs
+done
+$ANGSD/misc/realSFS -P 4 Results/TSI.saf.idx Results/CHB.saf.idx 2> /dev/null > Results/TSI.CHB.sfs
+```
+
+PBS can be calculated (in windows) using the following commands:
+```
+$ANGSD/misc/realSFS fst index Results/TSI.saf.idx Results/CHB.saf.idx Results/PEL.saf.idx -sfs Results/TSI.CHB.sfs -sfs Results/TSI.PEL.sfs -sfs Results/CHB.PEL.sfs -fstout Results/PEL.pbs
+# the nex command will perform a sliding-window analysis
+$ANGSD/misc/realSFS fst stats2 Results/PEL.pbs.idx -win 50000 -step 10000 > Results/PEL.pbs.txt
+```
+
+Let us have a look at the output file:
+./realSFS fst print
+
 
 SUMMARY STATS in PEL
 
@@ -202,10 +226,13 @@ cut -f 2- Data/LWK.PEL.fst.txt | cut -c 2- > Data/LWK.PEL.fst.slidwindtxt
 
 # Rscript Scripts/plotFST.R
 
+also plot genes below as in locuszoom?
 
 ..........................................................
 
 3) Estimate allele frequencies for SNPs in FADS genes of interest
+
+maybe move this after simulations? as it is more on haplotype based analysis?
 
 In ANGSD we can restrict our analyses on a subset of positions of interest using the `-sites` option.
 The positions we are looking at are the one found under selection in Inuit, shown [here](https://github.com/mfumagalli/WoodsHole/blob/master/Files/snps_inuit.png):

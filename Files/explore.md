@@ -66,9 +66,9 @@ As an example these are my paths.
 ANGSD=/data/data/Software/angsd
 SAMTOOLS=/data/data/Software/samtools-1.3
 NGSDIST=/data/Software/ngsDist
-#NGSTOOLS=/data/Software/ngsTools
+NGSTOOLS=/data/Software/ngsTools
 NGSADMIX=/data/data/Software/NGSadmix/NGSadmix
-#FASTME=/data/data/Software/fastme-2.1.4/src/fastme
+FASTME=/data/data/Software/fastme-2.1.4/src/fastme
 ```
 However, if these paths have been sym-linked to your /usr/bin, they can be called by simply typing their name, e.g. `angsd`.
 
