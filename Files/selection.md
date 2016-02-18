@@ -194,39 +194,52 @@ $ANGSD/misc/realSFS -P 4 Results/TSI.saf.idx Results/CHB.saf.idx 2> /dev/null > 
 
 PBS can be calculated (in windows) using the following commands:
 ```
-$ANGSD/misc/realSFS fst index Results/TSI.saf.idx Results/CHB.saf.idx Results/PEL.saf.idx -sfs Results/TSI.CHB.sfs -sfs Results/TSI.PEL.sfs -sfs Results/CHB.PEL.sfs -fstout Results/PEL.pbs
+# this command will compute per-site FST indexes
+$ANGSD/misc/realSFS fst index Results/TSI.saf.idx Results/CHB.saf.idx Results/PEL.saf.idx -sfs Results/TSI.CHB.sfs -sfs Results/TSI.PEL.sfs -sfs Results/CHB.PEL.sfs -fstout Results/PEL.pbs &> /dev/null
 # the nex command will perform a sliding-window analysis
-$ANGSD/misc/realSFS fst stats2 Results/PEL.pbs.idx -win 50000 -step 10000 > Results/PEL.pbs.txt
+$ANGSD/misc/realSFS fst stats2 Results/PEL.pbs.fst.idx -win 50000 -step 10000 > Results/PEL.pbs.txt
 ```
 
-Let us have a look at the output file:
-./realSFS fst print
+Have a look at the output file:
+```
+less -S Results/PEL.pbs.txt 
+```
+The header is:
+```
+region	chr	midPos	Nsites	Fst01	Fst02	Fst12	PBS0	PBS1	PBS2
+```
+Where are interested in the column `PB2` which gives the PBS values assuming PEL (coded here as 2) being the target population.
 
 
-SUMMARY STATS in PEL
+plot with locus zoom!
 
-$ANGSD/angsd -b $BAM/PEL_unadm.txt -anc $ANC -minInd 10 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -out Data/PEL -GL 1 -doMajorMinor 5 -doThetas 1 -pest Data/PEL.ml -doSaf 1
-$ANGSD/misc/thetaStat make_bed Data/PEL.thetas.gz
-$ANGSD/misc/thetaStat do_stat Data/PEL.thetas.gz -nChr 1 -win 20000 -step 2000 -outnames Data/PEL.thetas
-
-plot
-
+-----------------
 
 OPTIONAL
 
-FST - this can be in the section when I do simulations
+We are also interested in assessing whether an increase in allele frequency differentiation is also associated with a reduction of nucleotide diversity in PEL.
+Again, we can achieve this using ANGSD by estimating levels of diversity without relying on called genotypes.
 
-$ANGSD/misc/realSFS fst index Data/TSI.saf.idx Data/CHB.saf.idx -sfs Data/TSI.CHB.ml -fstout Data/TSI.CHB
+The procedure is similar to what done for PBS, and the SFS is again used as a prior to compute allele frequencies probabilities. 
+From these quantities, expectations of various diversity indexes are compute.
+This can be achieved using the following pipeline:
 
-$ANGSD/misc/realSFS fst stats2 Data/TSI.CHB.fst.idx -win 20000 -step 2000 > Data/TSI.CHB.fst.txt
-
-./realSFS fst print 
-
-cut -f 2- Data/LWK.PEL.fst.txt | cut -c 2- > Data/LWK.PEL.fst.slidwindtxt
-
-# Rscript Scripts/plotFST.R
-
-also plot genes below as in locuszoom?
+```
+POP=PEL
+# compute allele frequencies probabilities using SFS as prior
+$ANGSD/angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
+                -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+                -minMapQ 20 -minQ 20 -minInd 10 -setMinDepth 10 -setMaxDepth 200 -doCounts 1 \
+                -GL 1 -doSaf 1 \
+		-doThetas 1 -pest Results/$POP.sfs &> /dev/null
+# index files
+$ANGSD/misc/thetaStat make_bed Results/$POP.thetas.gz
+# perform a sliding-window analysis
+$ANGSD/misc/thetaStat do_stat Results/$POP.thetas.gz -nChr 1 -win 50000 -step 5000 -outnames Results/$POP.thetas
+# select only columns of interest (chrom, pos, theta, pi)
+cut -f 2-5 Results/$POP.thetas.pestPG > Results/$POP.thetas.txt
+```
+Values in this output file are the sum of the per-site estimates for the whole window.
 
 ..........................................................
 
