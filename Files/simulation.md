@@ -70,13 +70,17 @@ Now we need to
 ```
 Rscript Scripts/ms2stats.R Results/ALL.ms > Results/ALL.ms.txt
 ``
+Have a look at the output file (and check how many lines we have):
+```
+wc -l Results/ALL.ms.txt 
+less -S Results/ALL.ms.txt 
+```
 
 Plot and assess
+```
+Rscript Scripts/plotSim.R Results/ALL.ms.txt 0.80 Results/PEL.pbs.hist.pdf
+```
 
-
-) ms simulations
-
-plot assess significance
 
 
 ------------------------

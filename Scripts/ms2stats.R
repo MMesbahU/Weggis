@@ -13,7 +13,6 @@ nsam=80 # change this eventually
 haplos=readMs2(simfile, nsam)
 
 nrep=length(haplos$hap)
-cat("Found",nrep,"simulations.\n")
 
 he=c("S","SS","TajimaD","FuLiDs","FuLiFs","H1", "H2", "H2/H1", "FST12", "FST13", "FST23", "PBS3")
 cat(he, sep="\t")
