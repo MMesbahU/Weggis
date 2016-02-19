@@ -26,7 +26,7 @@ legend("topright", legen=c("PEL","CHB"), col=c("orange", "blue"), lty=1)
 
 #Add a second panel showing the genes in that region
 par(mar=c(5, 4, 0.5, 2) + 0.1)
-plotGenes(pbs$chr[1],min(pbs$midPos)/1e6,max(pbst$midPos)/1e6)
+plotGenes(pbs$chr[1],min(pbs$midPos)/1e6,max(pbs$midPos)/1e6)
 
 
 
