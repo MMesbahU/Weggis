@@ -1,3 +1,4 @@
+*.txt
 *.bamlist
 Data/*
 Results/*
