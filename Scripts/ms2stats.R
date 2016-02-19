@@ -19,7 +19,7 @@ cat(he, sep="\t")
 cat("\n")
 for (i in 1:nrep) {
 	
-		hap=haplos[[i]]$hap
+		hap=haplos[[i]][[1]]
 
 		haplist=list()
 		haplist[[1]]=hap[21:40] # TSI
@@ -29,9 +29,9 @@ for (i in 1:nrep) {
 		# anc=paste(rep("0",nchar(haplist[[1]][1])),sep="",collapse="")
 
 		## SUMMARY STATS
-		taj=tajima(haplist[[2]])[5] #TD
-		fu=fuli(haplist[[2]]) # 1 and 2 are S and SS, 3 and 4 are Ds and Fs
-		hs=homohapl(haplist[[2]]) # H1, H2, H2/H1
+		taj=tajima(haplist[[3]])[5] #TD
+		fu=fuli(haplist[[3]]) # 1 and 2 are S and SS, 3 and 4 are Ds and Fs
+		hs=homohapl(haplist[[3]]) # H1, H2, H2/H1
 		fsts=reynolds(haplist)
 		pbs=dopbs(fsts[2],fsts[3],fsts[1])
 

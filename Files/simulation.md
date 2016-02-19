@@ -67,6 +67,9 @@ less -S Results/ALL.ms
 
 Now we need to 
 
+```
+Rscript Scripts/ms2stats.R Results/ALL.ms > Results/ALL.ms.txt
+``
 
 
 
