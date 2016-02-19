@@ -56,6 +56,7 @@ Thus, our command would be: `... -n 4 0.24 ... -ej 0.027 4 3`.
 Our complete command line is:
 ```
 $MS 80 1000 -t 34 -r 22 50000 -I 4 20 20 20 20 -n 1 1.68 -n 2 3.73 -n 3 7.29 -n 4 0.25 -eg 0 2 116 -eg 0 3 160 -ma x 0.88 0.56 0.00 0.88 x 2.79 0.00 0.56 2.79 x 0.00 0.00 0.00 0.00 x -ej 0.027 4 3 -ej 0.029 3 2 -en 0.029 2 0.29 -en 0.30 1 1 > Results/ALL.ms
+rm seedms
 ``
 Look at the results:
 ```
