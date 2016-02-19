@@ -71,6 +71,7 @@ Now we need to
 Rscript Scripts/ms2stats.R Results/ALL.ms > Results/ALL.ms.txt
 ``
 
+Plot and assess
 
 
 ) ms simulations

@@ -14,6 +14,8 @@ par(mar=c(0, 4, 4, 2) + 0.1)
 
 pbs <- read.table(fin, header=TRUE)
 
+cat("Maximum PBS value:", max(pbs$PBS2, na.rm=T), "\n")
+
 plot(pbs$midPos/1e6, pbs$PBS2, type ="l", col="orange",ylab = "PBS", xlab=paste("Chromosome",pbs$chr[1]), main="PBS scan" , lwd=1, xaxt="n",cex.main = 0.9, cex.axis = 0.6, cex.lab = 0.68 ) #orange
 
 lines(pbs$midPos/1e6, pbs$PBS1, col="blue", lwd=1)
