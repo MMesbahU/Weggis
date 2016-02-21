@@ -19,7 +19,7 @@ for (i in 1:nind) fas0[i]=fas1[i]=""
 
 for (i in 1:nsites) {
 	        ref=vcf[i,4]; alt=vcf[i,5];
-		for (j in 1:length(nam)) {
+		for (j in 1:nind) {
 			s=j+5
 			all=strsplit(vcf[i,s],split="|")[[1]]
 			if (as.numeric(all[1])==0) fas0[j]=paste(fas0[j], ref, sep="", collapse="") else fas0[j]=paste(fas0[j], alt, sep="", collapse="")
