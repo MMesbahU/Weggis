@@ -19,11 +19,25 @@ ind.hap<-with(
 		              table(hap=ind, pop=rownames(x)[values])
 		              )
 
-net=haploNet(h)
+subset.haplotype <- function(x, freqmin = 1, freqmax = Inf, ...)
+{
+	    oc <- oldClass(x)
+    idx <- attr(x, "index")
+        f <- sapply(idx, length)
+        s <- f <= freqmax & f >= freqmin
+	    x <- x[s, ]
+	    attr(x, "index") <- idx[s]
+	        class(x) <- oc
+	        x
+}
+
+h5=subset(h,5)
+
+net=haploNet(h5)
 
 pdf(file=fout)
 
-plot(net, size=5*log2(attr(net, "freq"))+5, scale.ratio = 50, cex = 0.8, pie=ind.hap, labels=F, legend=F, show.mutation=0, th=0, lwd = (1 + round(.15*(net[,'step']))))
+plot(net, size=attr(net, "freq"), scale.ratio = 50, cex = 0.8, fast=TRUE, pie=ind.hap, labels=F, legend=F, show.mutation=0, th=0, lwd = (1 + round(.15*(net[,'step']))))
 legend("topleft", colnames(ind.hap), col=rainbow(ncol(ind.hap)), pch=20)
 
 dev.off()
