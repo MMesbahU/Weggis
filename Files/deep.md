@@ -24,9 +24,9 @@ plot network with popart (maybe before nSL?)
 
 ```
 > Results/FADS.fa
-Rscript Scripts/vcf2fasta.R Data/PEL.fads.vcf PEL >> Results/FADS.fa
-Rscript Scripts/vcf2fasta.R Data/CLM.fads.vcf CLM >> Results/FADS.fa
-Rscript Scripts/vcf2fasta.R Data/CHB.fads.vcf CHB >> Results/FADS.fa
+Rscript Scripts/vcf2fasta.R Data/PEL.fads.vcf PEL Results/PEL.fads.snp >> Results/FADS.fa
+Rscript Scripts/vcf2fasta.R Data/CLM.fads.vcf CLM NULL >> Results/FADS.fa
+Rscript Scripts/vcf2fasta.R Data/CHB.fads.vcf CHB NULL >> Results/FADS.fa
 ```
 Have a look at the resulting file:
 ```
@@ -35,11 +35,16 @@ less -S Results/FADS.fa
 
 Plot the haplotype network.
 ```
-Rscript Scripts/plotNet.R Results/FADS.fa Results/FADS.pdf
+Rscript Scripts/plotNet.R Results/FADS.fa Results/PEL.fads.snp Results/FADS.pdf 2> /dev/null > Results/FADS.diff
 ```
 Open the plot:
 ```
 evince Results/FADS.pdf
+```
+
+Look at candidate causal variants:
+```
+less -S Results/FADS.diff
 ```
 
 --------------

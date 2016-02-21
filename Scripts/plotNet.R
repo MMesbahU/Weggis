@@ -55,8 +55,8 @@ for (i in 1:(length(ind)-1)) {
 	for (j in (i+1):length(ind)) {
 		s1=strsplit(fas[ind[[i]][1]],split="")[[1]]
 		s2=strsplit(fas[ind[[j]][1]],split="")[[1]]
-		idiff=anno[which(s1!=s2),3]
-		cat(i, "\t", j, "\t", idiff, "\n")
+		idiff=anno[which(s1!=s2),2]
+		cat(i, "\t", j, "\t", paste(idiff,sep="",collapse="'"), "\n")
 	}
 }
 
