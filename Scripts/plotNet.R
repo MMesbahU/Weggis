@@ -6,7 +6,7 @@ fin=args[1]
 fout=args[2]
 rm(args)
 
-x=read.dna("fin", format="fasta")
+x=read.dna(fin, format="fasta")
 
 h=haplotype(x)
 h <- sort(h, what = "labels")

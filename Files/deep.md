@@ -23,11 +23,26 @@ selscan to compute nSL/iHS
 plot network with popart (maybe before nSL?)
 
 ```
-> Results/FADS.fs
+> Results/FADS.fa
 Rscript Scripts/vcf2fasta.R Data/PEL.chr11.vcf PEL >> Results/FADS.fa
 Rscript Scripts/vcf2fasta.R Data/CLM.chr11.vcf CLM >> Results/FADS.fa
 Rscript Scripts/vcf2fasta.R Data/CHB.chr11.vcf CHB >> Results/FADS.fa
 ```
+Have a look at the resulting file:
+```
+less -S Results/FADS.fa
+```
+
+Plot the haplotype network.
+```
+Rscript Scripts/plotNet.R Results/FADS.fa Results/FADS.pdf
+```
+Open the plot:
+```
+evince Results/FADS.pdf
+```
+
+
 
 
 
