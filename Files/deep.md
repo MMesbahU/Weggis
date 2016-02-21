@@ -24,9 +24,9 @@ plot network with popart (maybe before nSL?)
 
 ```
 > Results/FADS.fa
-Rscript Scripts/vcf2fasta.R Data/PEL.chr11.vcf PEL >> Results/FADS.fa
-Rscript Scripts/vcf2fasta.R Data/CLM.chr11.vcf CLM >> Results/FADS.fa
-Rscript Scripts/vcf2fasta.R Data/CHB.chr11.vcf CHB >> Results/FADS.fa
+Rscript Scripts/vcf2fasta.R Data/PEL.fads.vcf PEL >> Results/FADS.fa
+Rscript Scripts/vcf2fasta.R Data/CLM.fads.vcf CLM >> Results/FADS.fa
+Rscript Scripts/vcf2fasta.R Data/CHB.fads.vcf CHB >> Results/FADS.fa
 ```
 Have a look at the resulting file:
 ```

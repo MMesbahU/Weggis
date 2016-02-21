@@ -1,4 +1,7 @@
 
+library(ape)
+library(ade4)
+library(adegenet)
 library(pegas)
 
 args=commandArgs(T)
