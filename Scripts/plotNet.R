@@ -12,6 +12,7 @@ rm(args)
 x=read.dna(fin, format="fasta")
 
 h=haplotype(x)
+h=subset(h,5)
 h <- sort(h, what = "labels")
 
 ind.hap<-with(
@@ -31,13 +32,11 @@ subset.haplotype <- function(x, freqmin = 1, freqmax = Inf, ...)
 	        x
 }
 
-h5=subset(h,5)
-
-net=haploNet(h5)
+net=haploNet(h)
 
 pdf(file=fout)
 
-plot(net, size=attr(net, "freq"), scale.ratio = 50, cex = 0.8, fast=TRUE, pie=ind.hap, labels=F, legend=F, show.mutation=0, th=0, lwd = (1 + round(.15*(net[,'step']))))
+plot(net, size=attr(net, "freq"), scale.ratio = 2, cex = 0.8, fast=TRUE, pie=ind.hap, labels=F, legend=F, show.mutation=0, th=0, lwd = (1 + round(.10*(net[,'step']))))
 legend("topleft", colnames(ind.hap), col=rainbow(ncol(ind.hap)), pch=20)
 
 dev.off()

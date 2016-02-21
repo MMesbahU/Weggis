@@ -42,14 +42,6 @@ Open the plot:
 evince Results/FADS.pdf
 ```
 
-
-
-
-
-
-
-
-
 --------------
 
 OPTIONAL
