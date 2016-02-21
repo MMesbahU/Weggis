@@ -4,6 +4,7 @@
 args=commandArgs(T)
 fin=args[1]
 pop=args[2]
+fout=args[3] # this for site annotation
 rm(args)
 
 # append file to stdout
@@ -12,6 +13,7 @@ vcf=read.table(fin, sep="\t", stringsAsFact=F)
 nind=ncol(vcf)-9
 nsites=nrow(vcf)
 vcf=vcf[,c(1:5,10:ncol(vcf))]
+write.table(vcf[, 1:5], sep="\t", quote=F, row.names=F, col.names=F, file=fout)
 
 ## creata fasta
 fas0=fas1=c()

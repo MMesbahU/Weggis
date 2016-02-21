@@ -6,7 +6,8 @@ library(pegas)
 
 args=commandArgs(T)
 fin=args[1]
-fout=args[2]
+fin2=args[2]
+fout=args[3]
 rm(args)
 
 x=read.dna(fin, format="fasta")
@@ -36,10 +37,29 @@ net=haploNet(h)
 
 pdf(file=fout)
 
-plot(net, size=attr(net, "freq"), scale.ratio = 2, cex = 0.8, fast=TRUE, pie=ind.hap, labels=F, legend=F, show.mutation=0, th=0, lwd = (1 + round(.10*(net[,'step']))))
+plot(net, size=attr(net, "freq"), scale.ratio = 2, cex = 0.8, fast=TRUE, pie=ind.hap, labels=T, legend=F, show.mutation=0, th=0, lwd = (1 + round(.10*(net[,'step']))))
 legend("topleft", colnames(ind.hap), col=rainbow(ncol(ind.hap)), pch=20)
 
 dev.off()
+
+# identify mutations separating each haplotype
+
+fas=readLines(fin)
+fas=fas[seq(2,length(fas),2)]
+
+anno=read.table(fin2, head=F)
+
+ind=attr(h, "index")
+
+for (i in 1:(length(ind)-1)) {
+	for (j in (i+1):length(ind)) {
+		s1=strsplit(fas[ind[[i]][1]],split="")[[1]]
+		s2=strsplit(fas[ind[[j]][1]],split="")[[1]]
+		idiff=anno[which(s1!=s2),3]
+		cat(i, "\t", j, "\t", idiff, "\n")
+	}
+}
+
 
 
 
