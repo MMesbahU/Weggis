@@ -1,5 +1,5 @@
 
-We are not interested in understanding whether such levels of differentiation are expected (or not) under neutral evolution.
+We are now interested in understanding whether such levels of differentiation are expected (or not) under neutral evolution.
 We will assume we have a demographic model for the shared history of Europeans, East Asians, and Native Americans.
 We are using the commonly used software [ms](http://home.uchicago.edu/rhudson1/source/mksamples.html) to perform coalescent simulations under neutrality.
 We also use a model previously estimated [here](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1000695) for the evolution of Africans, Europeans and East Asians. 
@@ -11,7 +11,7 @@ Let us build the ms command.
 First define the path to 'ms':
 ```
 MS=/data/data/Software/msdir/ms
-``
+```
 
 The basic command line consists of `ms nsam nreps -t theta`.
 The first thing we need to define is how many samples we have (nsam, 80 chromosomes) and how many repetitions we want (nreps, for instance 1,000).
@@ -36,7 +36,7 @@ Finally, we need to state how population sizes change in time, when they split a
 * `-ej t i j` Move all lineages in subpopulation i to subpopulation j at time t (this is backward in time!)
 * `-em t i j x` Set Mij (=4N0*mij) to x at time t. mij is the fraction of subpopulation i made up of migrants each generation from subpopulation j
 
-As said before, we are going to use a previously estimated model for populations 1-3 (adapted from [here](http://gutengroup.mcb.arizona.edu/Publications/Gutenkunst2009-Supp.pdf)):
+As we said before, we are going to use a previously estimated model for populations 1-3 (adapted from [here](http://gutengroup.mcb.arizona.edu/Publications/Gutenkunst2009-Supp.pdf)):
 `-n 1 1.68 -n 2 3.73 -n 3 7.29 -n 4 ??? -eg 0 2 116 -eg 0 3 160 -ma x 0.88 0.56 0.00 0.88 x 2.79 0.00 0.56 2.79 x 0.00 0.00 0.00 0.00 x -ej 0.029 3 2 -en 0.029 2 0.29 -en 0.30 1 1 -ej ???`
 Therefore we need to set:
 * current effective population size in Native Americans `-n 4 ???`.
@@ -65,8 +65,11 @@ less -S Results/ALL.ms
 
 ------------------------------------------------------------------------
 
-Now we need to 
+From these simulations, we now need to calculate summary statistics.
+In other words, we want to retrieve the distribution of PBS under neutral evolution.
+We are then going to test whether our observed value falls within or outside such distribution.
 
+First, let us compute some summary statistics for each replication.
 ```
 Rscript Scripts/ms2stats.R Results/ALL.ms > Results/ALL.ms.txt
 ``
@@ -76,6 +79,7 @@ wc -l Results/ALL.ms.txt
 less -S Results/ALL.ms.txt 
 ```
 
+Now we can plot the expected distribution of PBS under neutrality and assess whether our observed value (for instance the top PBS value) is higher than a specific percentile (e.g. 95th or 99th).
 Plot and assess
 ```
 Rscript Scripts/plotSim.R Results/ALL.ms.txt 0.80 Results/PEL.pbs.hist.pdf
