@@ -3,24 +3,26 @@
 
 SS=/data/data/Software/selscan/bin/linux
 
-$SS/selscan --xpehh --vcf Data/PEL.chr11.vcf --vcf-ref Data/CHB.chr11.vcf --out Results/PEL --map genetic_map_GRCh37_chr11.txt 
+#$SS/selscan --xpehh --vcf Data/PEL.chr11.vcf --vcf-ref Data/CHB.chr11.vcf --out Results/PEL --map genetic_map_GRCh37_chr11.txt 
 
-$SS/selscan --nsl --vcf Data/PEL.chr11.vcf --out pel --max-extend-nsl 50 --maf 0.04
-$SS/norm --ihs --files pel.nsl.out --bins 40
+explain options in nsl
 
-$SS/selscan --xpehh --vcf Data/CLM.chr11.vcf --vcf-ref Data/CHB.chr11.vcf -out Results/CLM.xpehh.txt
+```
+$SS/selscan --nsl --vcf Data/PEL.chr11.vcf --out Results/PEL --max-extend-nsl 200 --maf 0.04
+$SS/norm --ihs --files Results/PEL.nsl.out --bins 20
+```
+The output file is called `Results/PEL.nsl.out.20bins.norm`.
 
-echo nsl
-$SS/selscan --vcf TLR2.vcf --threads 4 --nsl --out nsl
+Plot the results:
+```
+Rscript Scripts/plotnSL.R Results/PEL.nsl.out.20bins.norm Results/PEL.nsl.pdf
+```
 
-echo norm
-$SS/norm --ihs --files nsl.nsl.out --bins 40 > log
-
-selscan to compute nSL/iHS
+Why not high?
+Investigate haplotypes.
 
 -----------------------
 
-plot network with popart (maybe before nSL?)
 
 ```
 > Results/FADS.fa
@@ -45,14 +47,17 @@ evince Results/FADS.pdf
 Look at candidate causal variants:
 ```
 less -S Results/FADS.diff
+grep -P "V \t XXXVI" Results/FADS.diff | head -n 2 | tail -n 1 > Results/FADS.cause.diff
 ```
+
+Another tool for visualising haplotypes is popart (give link).
 
 --------------
 
 OPTIONAL
 
-Indetifying top sites (max PBS)
-
+Calculate allele frequencies in CHB, CLM and PEL for the previously identified causal variants.
+Calculate PBS.
 
 some final considerations on targeted variants? final aim identifcation of causal variant? what is the functional effect? already associated to some phenotypes? gwas-catalog? ucsc? dgGap? functionality like in roadmap?
 
