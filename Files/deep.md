@@ -83,8 +83,9 @@ To overcome this issue, either you should use absolute values of nSL and perform
 
 Another powerful statistic to delect selection from hard sweeps is XP-EHH, which measures the differential decay of haplotype homozygosity.
 XP-EHH are not standardised based on allele frequency bins and therefore are not sensitive to misspecification of the ancestral state.
-This statistic can be again computed using selscan, provided that we have a genetic map file.
+We assume that our target population is PEL and our reference population is CHB.
 
+This statistic can be again computed using selscan, provided that we have a genetic map file.
 A genetic map for chromosome 11 (based on 1000 Genomes data) is provided here:
 ```
 less -S Files/genetic_map_GRCh37_chr11.map
@@ -93,26 +94,31 @@ However we need to extract only the sites that correspond in our VCF file.
 We also need to interpolate over the sites that are not recorded in our genetic map.
 A simple (slow) R script to do that is here:
 ```
-Rscript Scripts/calcGenMap.R Files/genetic_map_GRCh37_chr11.map Data/PEL.chr11.vcf > Results/genetic.map
+Rscript Scripts/getGenMap.R Files/genetic_map_GRCh37_chr11.map Data/PEL.chr11.vcf > Results/genetic.map
 ```
 
 Now we can run XP-EHH giving the resulting file as input.
+This may take some time...
 ```
-$$SS/selscan --xp-ehh --vcf Data/PEL.chr11.vcf --vcf-ref Data/CHB.chr11.vcf --map Files/genetic.map --out Results/PEL
+$SS/selscan --xpehh --vcf Data/PEL.chr11.vcf --vcf-ref Data/CHB.chr11.vcf --map Results/genetic.map --out Results/PEL --threads 4
 ```
 The output file has the header:
 `< locusID > < physicalPos > < geneticPos > < popA ’1 ’ freq > < ihhA > < popB ’1 ’ freq > < ihhB > < unstandardized XPEHH >`
 ```
-$SS/norm --xp-ehh --files Results/PEL.nsl.out --bins 20
+less -S Results/PEL.xpehh.out
 ```
 
+Again, we normalise the results (knowing that this should be done genome-wide):
+```
+$SS/norm --xpehh --files Results/PEL.xpehh.out
+```
 Have a look at the results:
 ```
-
+less -S Results/PEL.xpehh.out.norm
 ```
-Plot them:
+and plot them:
 ```
-
+Rscript Scripts/plotXPEHH.R Results/PEL.xpehh.out.norm Results/PEL.xpehh.pdf
 ```
 
 -----------------------------
