@@ -90,12 +90,13 @@ A genetic map for chromosome 11 (based on 1000 Genomes data) is provided here:
 less -S Files/genetic_map_GRCh37_chr11.map
 ```
 However we need to extract only the sites that correspond in our VCF file.
+We also need to interpolate over the sites that are not recorded in our genetic map.
 A simple (slow) R script to do that is here:
 ```
-
+Rscript Scripts/calcGenMap.R Files/genetic_map_GRCh37_chr11.map Data/PEL.chr11.vcf > Results/genetic.map
 ```
-Now we can run XP-EHH giving the resulting file as input.
 
+Now we can run XP-EHH giving the resulting file as input.
 ```
 $$SS/selscan --xp-ehh --vcf Data/PEL.chr11.vcf --vcf-ref Data/CHB.chr11.vcf --map Files/genetic.map --out Results/PEL
 ```
