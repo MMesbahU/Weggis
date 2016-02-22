@@ -116,7 +116,9 @@ How many values do you expect?
 awk -F' ' '{print NF; exit}' Results/PEL.sfs 
 ```
 
-OPTIONAL
+------------------------------
+
+**OPTIONAL**
 
 Let us plot the SFS for each pop using this simple R script.
 ```
@@ -142,7 +144,7 @@ More examples on how to estimate the SFS with ANGSD can be found [here](https://
 
 ---------------------------------------
 
-OPTIONAL
+**OPTIONAL**
 
 It is very useful to estimate a **multi-dimensional SFS**, for instance the joint SFS between 2 populations (2D).
 This can be used for making inferences on their divergence process (time, migration rate and so on).
@@ -217,10 +219,9 @@ Rscript Scripts/plotPBS.R Results/PEL.pbs.txt Results/PEL.pbs.pdf
 
 The next step would be to assess whether such pattern of allelic differentiation is expected given a demographic model.
 
-
 -----------------
 
-OPTIONAL
+**OPTIONAL**
 
 We are also interested in assessing whether an increase in allele frequency differentiation is also associated with a change of nucleotide diversity in PEL.
 Again, we can achieve this using ANGSD by estimating levels of diversity without relying on called genotypes.
@@ -248,7 +249,7 @@ Values in this output file are the sum of the per-site estimates for the whole w
 
 ---------------------------------------------------------------------------
 
-OPTIONAL
+**OPTIONAL**
 
 We may also be interested in estimating allele frequencies for our SNPs of interest.
 

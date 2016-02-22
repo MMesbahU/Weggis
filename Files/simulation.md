@@ -3,9 +3,15 @@ We are now interested in understanding whether such levels of differentiation ar
 We will assume we have a demographic model for the shared history of Europeans, East Asians, and Native Americans.
 We are using the commonly used software [ms](http://home.uchicago.edu/rhudson1/source/mksamples.html) to perform coalescent simulations under neutrality.
 We also use a model previously estimated [here](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1000695) for the evolution of Africans, Europeans and East Asians. 
+A figure representing this model is depicted here:
+[[https://github.com/mfumagalli/Weggis/blob/Master/Files/gutenkunst.png]]
+and parameter values are reported here:
+[[https://github.com/mfumagalli/Weggis/blob/Master/Files/gutenkunst_table.png]]
 
 Our goal here is to add the history of Native Americans to this model, roughly following estimates reported in [this](http://www.ncbi.nlm.nih.gov/pubmed/26198033) paper.
 Thus, we will assume that Native Americans (their ancestors) splitted from East Asians 20kya and their effective population size is 2,000 from the split until present.
+
+----------------------------------------
 
 Let us build the ms command.
 First define the path to 'ms':
@@ -16,9 +22,9 @@ MS=/data/data/Software/msdir/ms
 The basic command line consists of `ms nsam nreps -t theta`.
 The first thing we need to define is how many samples we have (nsam, 80 chromosomes) and how many repetitions we want (nreps, for instance 1,000).
 Next we need to define the mutation parameter Theta which is equal to `4*Ne*mu*L` where:
-	* Ne: reference effective population size (7310, according to the model we are using)
-	* mu: mutation rate per bp per generation (2.35e-8, a bit outdated but let us stick to the model used)
-	* L: length in bp of the simulated region (we have windows of 50kbp)
+* Ne: reference effective population size (7310, according to the model we are using)
+* mu: mutation rate per bp per generation (2.35e-8, a bit outdated for humans but let us stick to the model used)
+* L: length in bp of the simulated region (we have windows of 50kbp)
 Similarly, we need to define a recombination rate parameter `-r rho length` (e.g. probability of recombination of 1.5e-8).
 
 Therefore our basic command line would be:
