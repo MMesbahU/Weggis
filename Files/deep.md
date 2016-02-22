@@ -123,7 +123,12 @@ Rscript Scripts/plotXPEHH.R Results/PEL.xpehh.out.norm Results/PEL.xpehh.pdf
 
 -----------------------------
 
+**ADDITIONAL MATERIAL**
 
+Finally, we are interested in investigating the haplotype distribution in this region.
+Specifically, we want to draw a haplotype network, where all (unique) haplotypes are clustered based on their mutual genetic distance.
+
+First, we convert our VCF files into FASTA files.
 ```
 > Results/FADS.fa
 Rscript Scripts/vcf2fasta.R Data/PEL.fads.vcf PEL Results/PEL.fads.snp >> Results/FADS.fa
@@ -135,7 +140,7 @@ Have a look at the resulting file:
 less -S Results/FADS.fa
 ```
 
-Plot the haplotype network.
+We are using [pegas](https://bioinformatics.oxfordjournals.org/content/26/3/419.full) package in R to draw haplotype network.
 ```
 Rscript Scripts/plotNet.R Results/FADS.fa Results/PEL.fads.snp Results/FADS.pdf 2> /dev/null > Results/FADS.diff
 ```
@@ -143,23 +148,15 @@ Open the plot:
 ```
 evince Results/FADS.pdf
 ```
+Each unique haplotype is represented as a circle whose size is proportional to its frequency.
 
-Look at candidate causal variants:
+The variants on the branch separating CHB and PEL common haplotypes are candidates to be causal.
 ```
 less -S Results/FADS.diff
 grep -P "V \t XXXVI" Results/FADS.diff | head -n 2 | tail -n 1 > Results/FADS.cause.diff
 ```
 
-Another tool for visualising haplotypes is popart (give link).
-
---------------
-
-OPTIONAL
-
-Calculate allele frequencies in CHB, CLM and PEL for the previously identified causal variants.
-Calculate PBS.
-
-some final considerations on targeted variants? final aim identifcation of causal variant? what is the functional effect? already associated to some phenotypes? gwas-catalog? ucsc? dgGap? functionality like in roadmap?
+Another useful tool for visualising haplotypes is [PopArt](http://popart.otago.ac.nz/).
 
 ------------------------
 
