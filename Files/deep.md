@@ -1,5 +1,18 @@
 
--) deep resequencing so high depth VCF
+We have some suggestive results pointing towards selection acting in the FADS region based on patterns of genetic differentiation against East Asians and Europeans.
+However, we employed low-depth data and our analyses were not based on called genotypes.
+Therefore, we did not have the power, for instance, to identify the causal variant (if any) and patterns of haplotype distribution.
+
+It is usual to then perform a targeted deep resequencing of our region of interest, to further refione our selection analyses and highlight putative causal variants.
+Here we can even include more samples (as the experimental cost will be lower anyway).
+Therefore, we are now using high-depth phased data (in VCF format) for  180 samples from CHB, PEL and another Latin American population (CLM, from Colombia) to assess whether selection signatures are shared across other populations.
+
+-------------------------- 
+
+As we are using phased data, we are able to perform selection tests based on haplotype diversity and/or homozygosity, as seen during the lecture.
+We are going to use the software [selscan](https://github.com/szpiech/selscan), which implements several selection tests (iHS, nSL, XP-EHH and so on).
+
+
 
 SS=/data/data/Software/selscan/bin/linux
 
