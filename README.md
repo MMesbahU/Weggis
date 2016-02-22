@@ -46,17 +46,16 @@ Additional scripts are be provided in the `Scripts/` folder.
 
 Slides are available in [pdf]() and [pptx]() format.
 
-* Session 1 - The effect of selection on the genome + Methods to detect selection signals (positive, negative, balancing)
+The effect of selection on the genome + Methods to detect selection signals (positive, negative, balancing)
 
-* Session 2 - The problem of assessing significance + Critical discussion of case studies
+The problem of assessing significance + Critical discussion of case studies
 
 Summary statistics from low-depth data
 
 ### Practical
 
-Session 3 - Genomic scan for selection from large-scale data set
-
-identification of allele frequency differentation between, with admixture assessment and quantification, from low-depth data: the case of FADS genetic variation in Native Americans
+Genomic scan for selection from large-scale data set.
+Case study: identification of allele frequency differentation between, with admixture assessment and quantification, from low-depth data: the case of FADS genetic variation in Native Americans
 
 * [Rationale](https://github.com/mfumagalli/Weggis/blob/master/Files/rationale.md) and plan of action
 * Brief introduction to [ANGSD](http://www.popgen.dk/angsd/index.php/Main_Page) and [population structure](https://github.com/mfumagalli/Weggis/blob/master/Files/explore.md) analysis
