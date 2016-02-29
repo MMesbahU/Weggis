@@ -4,7 +4,7 @@
 args=commandArgs(T)
 fin=args[1]
 obs=as.numeric(args[2])
-fout(args[3])
+fout=args[3]
 rm(args)
 
 res=read.table(fin, head=T)
