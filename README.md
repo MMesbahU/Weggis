@@ -51,6 +51,7 @@ Slides are available in [pdf]() and [pptx]() format:
 * The effect of selection on the genome
 * Methods to detect selection signals
 * The problem of assessing significance
+* Bias introduced by NGS data
 * Summary statistics from low-depth data
 
 ### Practical

@@ -36,7 +36,7 @@ mkdir Results
 
 Here are few lines to check that all programs have been loaded and work:
 ```
-module avail
+# module avail
 module load angsd
 angsd
 samtools
@@ -55,7 +55,7 @@ module load R/3.2.3
 module load fastme
 ```
 
-You also need to provide the location of reference sequences:
+You also need to provide the location of data and reference sequences:
 ```
 DIR=/gdc_home5/groups/bag2016/wednesday
 DATA=$DIR/Data
@@ -77,6 +77,10 @@ ANGSD can accept several input files, as described [here](http://popgen.dk/angsd
 * Genotype likelihood/probability files
 * VCF
 
+First load the correct module
+```
+module load angsd
+```
 To see a full list of options in ANGSD type:
 ```
 angsd
@@ -116,6 +120,7 @@ Examples:
         Estimate MAF for bam files in 'list'
                 './angsd -bam list -GL 2 -doMaf 2 -out RES -doMajorMinor 1'
 ```
+Be sure you are using this version `-> angsd version: 0.910-65-g86b939f (htslib: 1.3-29-g091c89c) build(Feb 24 2016 09:27:30)` (check the first lines of the output on the screen).
 
 ANGSD can also perform some basic filtering of the data.
 These filters are based on:
@@ -234,7 +239,7 @@ In other words, at each site we want to to estimate (or count) how many copies o
 ANGSD has an option to estimate **allele frequencies**:
 
 ```
-$ANGSD/angsd -doMaf
+angsd -doMaf
 ...
 -doMaf  0 (Calculate persite frequencies '.mafs.gz')
         1: Frequency (fixed major and minor)
@@ -304,6 +309,8 @@ There are two main ways to call SNPs using ANGSD with these options:
 ```
 Therefore we can consider assigning as SNPs sites whose estimated allele frequency is above a certain threhsold (e.g. the frequency of a singleton) or whose probability of being variable is above a specified value.
 
+For more details and examples on SNP calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/snpcall.md)
+
 --------------------------------
 
 Back to our example, we need to compute genotype posterior probabilities for all samples with ANGSD only on putative polymorphic sites.
@@ -321,12 +328,44 @@ Open the output file:
 ```
 less -S Results/ALL.geno.gz
 ```
+The columns are: chromosome, position, major allele, minor allele, genotypes is 0,1,2 format.
 
-However, since our data is low-depth, genotypes cannot be assigned with high confidence and therefore we want to use **genotype posterior probabilities** instead, using options `-doGeno 8(or32) -doPost 1`.
+We have also generated estimates of the minor allele frequencies and these are stored in .mafs.gz file:
+```
+less -S Results/ALL.mafs.gz
+```
+The columns are: chromosome, position, major allele, minor allele, reference allele, allele frequency, p-value for SNP calling, number of individuals with data.
+
+However, since our data is low-depth, genotypes cannot be assigned with high confidence and therefore we want to use **genotype posterior probabilities** instead, using options `-doGeno 8 -doPost 1`.
 
 Let us build our command line, recalling what we have previously defined.
+Print out the called genotypes in allelic format (option 4) and the associated genotype probability (option 16, so the total value is 4+16=20) by using a uniform prior (-doPost 2):
 ```
-angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
+        -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
+        -SNP_pval 1e-3 \
+        -doGeno 20 -doPost 2 &> /dev/null
+```
+Open the file:
+```
+less -s Results/ALL.geno.gz
+```
+and you will see that now we have probabilities appended to all called genotypes.
+
+As you can see, many of the associated probabilities (<0.90) are low making the assignment of genotypes prone to errors.
+Probabilities can be further refined by using a HWE-based prior (option -doPost 1).
+Nevertheless any bias in genotype calling will then be downstreamed to all further analyses.
+
+------------------
+
+Specifically, we are now performing a principal component analyses (PCA) without relying on called genotypes, but rather by taking their uncertainty into account.
+More specifically, the next program we are going to use (ngsTools) takes as input genotype probabilities in binary format, so we need to specify `-doGeno 32`.
+Also, we are using a HWE-based prior with `-doPost 1`.
+
+```
+angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
         -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
         -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
@@ -338,41 +377,80 @@ Unzip the results but you cannot open it since it is in binary format:
 gunzip Results/ALL.geno.gz
 ```
 
-We need to define how many sites we have.
-For instance we can inspect the file with allele frequencies:
+Please unload the ANGSD module now and load the ngsTools and R ones:
+```
+module unload angsd
+module load ngsTools
+module load R/3.2.3
+```
+
+We are going to use `ngsCovar`, which estimates the covariance matrix between individuals based on genotype probabilities.
+Then this matrix will be decomposed into principal componenets which will be investigated for population structure analyses.
+
+If you type
+```
+ngsCovar
+```
+you will see a list of possible options.
+
+For instance, we need to define how many sites we have.
+To retrieve such value, we can inspect the file with allele frequencies:
 ```
 less -S Results/ALL.mafs.gz
 ```
-
 How many sites do we have?
 ```
 N_SITES=`zcat Results/ALL.mafs.gz | tail -n+2 | wc -l`
 echo $N_SITES
 ```
 
-------------------
-
-Now we can finally perform a PCA but first estimating the covariance matrix using this tool available in ngsTools:
+Now we can perform a PCA but first estimating the covariance matrix using:
 ```
 ngsCovar -probfile Results/ALL.geno -outfile Results/ALL.covar -nind 60 -nsites $N_SITES -call 0 -norm 0 &> /dev/null
 ```
+with the options `-call 0` meaning that we do not perform genotype calling and `-norm 0` that we are not normalising by allele frequency.
+The latter may give more weight to low frequency variants which are harder to estimate.
 
-We perform an eigenvector decomposition and plot the resulting map:
+Look at the output file:
 ```
+less -S Results/ALL.covar
+```
+which represents a matrix of NxN with N individuals giving the covariance.
+Note that this matrix is symmetric.
+
+Finally, we perform an eigenvector decomposition and plot the resulting map:
+```
+# create a cluster-like file defining the labelling (population) for each sample
 Rscript -e 'write.table(cbind(seq(1,60),rep(1,60),c(rep("LWK",20),rep("TSI",20),rep("PEL",20))), row.names=F, sep=" ", col.names=c("FID","IID","CLUSTER"), file="Results/ALL.clst", quote=F)'
+# run and plot
 Rscript $DIR/Scripts/plotPCA_ngstools.R -i Results/ALL.covar -c 1-2 -a Results/ALL.clst -o Results/ALL.pca.pdf
 ```
-Finally, open the image:
+where the parameter `-c 1-2` specifies that we are plotting only the first and second component.
+On the screen, you will see a series of numbers.
+These are the percentage of explained variance for each component.
+
+Finally, you can open the produced image, by for instance copying it locally to your computer:
 ```
-evince Results/ALL.pca.pdf
+## run this on your local machine by using your username and password
+# scp mfuma@gdcsrv1.ethz.ch:/gdc_home4/mfuma/Wednesday/Results/ALL.pca.pdf .
+# open ALL.pca.pdf # or use `evince` on ubuntu
 ```
 
 Comment on the results.
 
-Therefore, PEL samples appear very close to EUR but separate.
+...thinking...
+
+Therefore, PEL samples appear very close to EUR but separated.
 Indeed, among all Latin American populations present in the 1000G project, Peruvians are the least admixed population.
 We can either use all these samples or, as described below, compute admixture proportions in order to select a subset of putative Native American (unadmixed) samples.
-For the rest of the exercises, we are going to use all PEL sample.
+For the rest of the exercises, we are going to use all PEL sample but optionally you can use only the unadmixed samples.
+Note that again the estimation of admixture proportions will be performed taking genotype uncertainty into account
+
+Please unload the ngsTools module and reload the ANGSD one:
+```
+module unload ngsTools
+module load angsd
+```
 
 -----------------------
 
@@ -399,20 +477,27 @@ Rscript -e 'cat(paste(rep(c("LWK","TSI","PEL"),each=20), rep(1:20, 3), sep="_"),
 cat pops.label
 
 #With [ngsDist](https://github.com/fgvieira/ngsDist) we can compute pairwise genetic distances without relying on individual genotype calls.
+module load ngsDist
 N_SAMPLES=60
 ngsDist -verbose 1 -geno Results/ALL.geno.gz -probs -n_ind $N_SAMPLES -n_sites $N_SITES -labels pops.label -o Results/ALL.dist -n_threads 4
 less -S Results/ALL.dist
+module unload ngsDist
 
 #From these distances, we can perform a MDS analysis and investigate the population genetic structure of our samples.
 tail -n +3 Results/ALL.dist | head -n $N_SAMPLES | Rscript --vanilla --slave Scripts/get_MDS.R --no_header --data_symm -n 4 -m "mds" -o Results/ALL.mds
 
 #We can visualise the pairwise genetic distances in form of a tree (in Newick format).
+module load fastme
 fastme -D 1 -i Results/ALL.dist -o Results/ALL.tree -m b -n b &> /dev/null
 cat Results/ALL.tree
+module unload fastme
 
 #We can some R packages to plot the resulting tree.
 Rscript -e 'library(ape); library(phangorn); pdf(file="Results/ALL.tree.pdf"); plot(read.tree("Results/ALL.tree"), cex=0.5); dev.off();' &> /dev/null
-evince Results/ALL.tree.pdf
+# again you should copy this .pdf to your local machine in order to visualise it
+## run this on your local machine by using your username and password
+# scp mfuma@gdcsrv1.ethz.ch:/gdc_home4/mfuma/Wednesday/Results/ALL.tree.pdf .
+# open ALL.tree.pdf # or use `evince` on ubuntu
 ```
 
 ------------------------
@@ -434,12 +519,16 @@ angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
         -SNP_pval 1e-3 \
         -doGlf 2 &> /dev/null
 ```
+Be sure you are using the latest ANGSD version (>0.900).
+Otherwise please unload ngsTools module and reload then ANGSD one.
 
 We assume 3 ancestral populations (Europeans, Africans and Native Americans) making up the genetic diversity of our samples.
 Therefore we compute admixture proportions with 3 ancestral components.
 ```
+module load ngsadmix
 K=3
 ngsdadmix -likes Results/ALL.beagle.gz -K $K -outfiles Results/ALL.admix.K$K -P 4 -minMaf 0.02
+module unload ngsadmix
 ```
 
 Combine samples IDs with admixture proportions and inspect the results.
@@ -458,7 +547,8 @@ Rscript Scripts/getUnadmixed.R 0.90 PEL LWK TSI
 Inspect the results.
 ```
 less -S Results/PEL_unadm.BAMs.txt
-evince Results/ALL.admix.PEL.pdf
+# if you want to see the image, again copy it to your local machine
+# evince Results/ALL.admix.PEL.pdf
 ```
 
 Now we have a subset of putative Native American samples.
