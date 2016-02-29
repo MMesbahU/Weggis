@@ -45,6 +45,7 @@ ANC=/gdc_home5/groups/bag2016/wednesday/Data/hg19ancNoChr.fa
 
 Again, we will use 80 BAM files of human samples (of African, European, East Asian, and Native American descent), a reference genome, and putative ancestral sequence.
 The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set, encompassing the FADS gene family.
+
 Also, to make things more interesting, we have downsampled our data to an average mean depth of 2X.
 
 --------------------------
