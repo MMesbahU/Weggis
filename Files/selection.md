@@ -266,6 +266,77 @@ We can plot the results along with the gene annotation.
 ```
 Rscript $DIR/Scripts/plotPBS.R Results/PEL.pbs.txt Results/PEL.pbs.pdf
 ```
+It will also print out the maximum PBS value observed (e.g. `Maximum PBS value: 1.151302`), as this value will be used in the next part.
+This script will also plot the PBS variation assuming CHB as the target population, as a comparison.
+Again, copy this file to your local machine and inspect it:
+```
+## run this on your local machine by using your username and password
+# scp mfuma@gdcsrv1.ethz.ch:/gdc_home4/mfuma/Wednesday/Results/PEL.pbs.pdf .
+# open PEL.pbs.pdf
+```
+
+Comment on the results.
+
+...thinking...
+
+There is a local increase in PBS (genetic differentiation in PEL) corresponding to the FADS genes cluster!
+Such pattern is not observed assuming CHB being the selected population.
+
+-------------------------
+
+Now we are going to check what we would have got if we had used 'default' values under a standard genotype calling approach.
+For the sake of fairness, we are doing a light filtering based on mapping and base quality as well.
+
+Call genotypes:
+```
+angsd -P 4 -b $DIR/ALL.bamlist -ref $REF -out Results/DUMB \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+        -minMapQ 20 -minQ 20 -minInd 40 -setMinDepth 10 -setMaxDepth 1000 -doCounts 1 \
+        -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
+        -doGeno 2 -doPost 2 &>/dev/null 
+```
+and open the results:
+```
+less -S Results/DUMB.geno.gz
+```
+as you can see there are many '-1' values which represent unassigned genotypes due to missing data.
+We would not be able to perform any analyses with some many missing sites, unless doing some imputation.
+We can overcome this by assuming HWE and use an informative prior on genotypes.
+This is achieved by using `-doPost 1` option.
+Note that we are not doing a SNP calling here.
+
+Call genotypes using a HWE-based prior:
+```
+angsd -P 4 -b $DIR/ALL.bamlist -ref $REF -out Results/DUMB \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+        -minMapQ 20 -minQ 20 -minInd 40 -setMinDepth 10 -setMaxDepth 1000 -doCounts 1 \
+        -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
+        -doGeno 2 -doPost 1 &>/dev/null 
+```
+and open the results:
+```
+less -S Results/DUMB.geno.gz
+```
+
+We now calculate PBS value from called genotypes, again in sliding windows.
+You can use this R script:
+```
+
+```
+and plot the results.
+```
+Rscript $DIR/Scripts/plotPBS.R Results/DUMB.pbs.txt Results/DUMB.pbs.pdf
+```
+It will also print out the maximum PBS value observed (e.g. `Maximum PBS value: 1.151302`), as this value will be used in the next part.
+This script will also plot the PBS variation assuming CHB as the target population, as a comparison.
+Again, copy this file to your local machine and inspect it:
+```
+## run this on your local machine by using your username and password
+# scp mfuma@gdcsrv1.ethz.ch:/gdc_home4/mfuma/Wednesday/Results/DUMB.pbs.pdf .
+# open DUMB.pbs.pdf
+```
+
+
 
 Compare to the case of called genotypes with default values.
 
@@ -285,15 +356,15 @@ This can be achieved using the following pipeline:
 ```
 POP=PEL
 # compute allele frequencies probabilities using SFS as prior
-$ANGSD/angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
+angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
                 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
                 -minMapQ 20 -minQ 20 -minInd 10 -setMinDepth 10 -setMaxDepth 200 -doCounts 1 \
                 -GL 1 -doSaf 1 \
 		-doThetas 1 -pest Results/$POP.sfs &> /dev/null
 # index files
-$ANGSD/misc/thetaStat make_bed Results/$POP.thetas.gz
+thetaStat make_bed Results/$POP.thetas.gz
 # perform a sliding-window analysis
-$ANGSD/misc/thetaStat do_stat Results/$POP.thetas.gz -nChr 1 -win 50000 -step 5000 -outnames Results/$POP.thetas
+thetaStat do_stat Results/$POP.thetas.gz -nChr 1 -win 50000 -step 5000 -outnames Results/$POP.thetas
 # select only columns of interest (chrom, pos, theta, pi)
 cut -f 2-5 Results/$POP.thetas.pestPG > Results/$POP.thetas.txt
 ```
