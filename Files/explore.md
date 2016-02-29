@@ -33,28 +33,6 @@ and create a folder where you will put all your output files:
 ```
 mkdir Results
 ```
-
-Here are few lines to check that all programs have been loaded and work:
-```
-# module avail
-module load angsd
-angsd
-samtools
-module load ngsTools
-ngsCovar
-module load ngsDist
-ngsDist                    
-module load ngsadmix
-NGSadmix 
-module load ms
-ms
-module load selscan
-selscan
-norm
-module load R/3.2.3
-module load fastme
-```
-
 You also need to provide the location of data and reference sequences:
 ```
 DIR=/gdc_home5/groups/bag2016/wednesday
@@ -66,7 +44,7 @@ ANC=$DATA/hg19ancNoChr.fa
 Again, we will use 80 BAM files of human samples (of African, European, East Asian, and Native American descent), a reference genome, and putative ancestral sequence.
 The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set, encompassing the FADS gene family.
 
-Also, to make things more interesting, we have downsampled our data to an average mean depth of 2X.
+Also, to make things more interesting, we have downsampled our data to an average mean depth of *2X*.
 
 --------------------------
 
