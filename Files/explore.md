@@ -20,27 +20,47 @@ By the end of this part you will learn:
 
 ### Preparation
 
-Please set the path for all programs and data we will be using.
-As an example these are my paths.
+Assuming you are on your home folder:
 ```
-ANGSD=/data/data/Software/angsd
-SAMTOOLS=/data/data/Software/samtools-1.3
-NGSDIST=/data/Software/ngsDist
-NGSTOOLS=/data/Software/ngsTools
-NGSADMIX=/data/data/Software/NGSadmix/NGSadmix
-FASTME=/data/data/Software/fastme-2.1.4/src/fastme
+cd /gdc_home4/mfuma
 ```
-However, if these paths have been sym-linked to your /usr/bin, they can be called by simply typing their name, e.g. `angsd`.
+and you may want to create a new folder
+```
+mkdir Wednesday
+cd Wednesday
+```
+and create a folder where you will put all your output files:
+```
+mkdir Results
+```
 
-If you downloaded the data using the provided script, this is what you should specify.
+Here are few lines to check that all programs have been loaded and work:
 ```
-# REF=Data/hs37d5.fa
-# ANC=Data/hg19ancNoChr.fa
+module avail
+module load angsd
+angsd
+samtools
+module load ngsTools
+ngsCovar
+module load ngsDist
+ngsDist                    
+module load ngsadmix
+NGSadmix 
+module load ms
+ms
+module load selscan
+selscan
+norm
+module load R/3.2.3
+module load fastme
 ```
-otherwise these files can be found here:
+
+You also need to provide the location of reference sequences:
 ```
-REF=/gdc_home5/groups/bag2016/wednesday/Data/hs37d5.fa
-ANC=/gdc_home5/groups/bag2016/wednesday/Data/hg19ancNoChr.fa
+DIR=/gdc_home5/groups/bag2016/wednesday
+DATA=$DIR/Data
+REF=$DATA/hs37d5.fa
+ANC=$DATA/hg19ancNoChr.fa
 ```
 
 Again, we will use 80 BAM files of human samples (of African, European, East Asian, and Native American descent), a reference genome, and putative ancestral sequence.
@@ -59,8 +79,7 @@ ANGSD can accept several input files, as described [here](http://popgen.dk/angsd
 
 To see a full list of options in ANGSD type:
 ```
-ANGSD=/data/data/Software/angsd
-$ANGSD/angsd
+angsd
 ```
 and you should see something like
 ```
@@ -98,6 +117,49 @@ Examples:
                 './angsd -bam list -GL 2 -doMaf 2 -out RES -doMajorMinor 1'
 ```
 
+ANGSD can also perform some basic filtering of the data.
+These filters are based on:
+
+* quality and depth, see [here](http://www.popgen.dk/angsd/index.php/Filters)
+* SNP quality, see [here](http://popgen.dk/angsd/index.php/SnpFilters)
+* sites, see [here](http://popgen.dk/angsd/index.php/Sites)
+
+For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/filtering.md)
+
+Let us build our command line.
+First we need to define input and output files:
+```
+# angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+...
+```
+with `-b` we give the file including paths to all BAM files we need to analyse.
+`-P 4` says the we are going to use 4 threads.
+`-ref` specifies the reference sequence.
+`-out` states the prefix for all output files that will be generated.
+
+Next we need to define some basic filtering options.
+First we define filters based on reads qaulity.
+```
+# angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+...
+```
+These filters will retain only uniquely mapping reads, not tagged as bad, considering only proper pairs, without trimming, and adjusting for indel/mapping (as in samtools).
+
+Then, we define filters based on mapping and base quality, as well as depth.
+```
+# angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
+...
+```
+Specifically here we analyse only reads with a minimum mapping quality of 20 , and bases with a minimum quality of 20 (the values are in phred scores).
+Also we specify that we are analysing only sites where we have data for half of the individuals (30) and minimum and maximum TOTAL depth of 30 and 300, respectively.
+`-doCounts 1` simply forces the calculation of depth.
+
+For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/filtering.md)
+
+Next we are going to illustrate other features in ANGSD by analyses of population structure within our sample.
 
 --------------------
 
@@ -113,7 +175,7 @@ To do this, we first need to assign genotypes (or their associated probabilities
 We now see how to use ANGSD to call genotypes.
 The specific option is `-doGeno`:
 ```
-$ANGSD/angsd -doGeno
+angsd -doGeno
 ...
 -doGeno 0
         1: write major and minor
@@ -150,7 +212,15 @@ angsd -doPost
 `-doPost 1` uses the estimate per-site allele frequency as a prior for genotype proportions, assuming Hardy Weinberg Equilibrium.
 When the assumption of HWE is not valid, you can use an estimate of the inbreeding coefficient, for instance calculated using [ngsF](https://github.com/fgvieira/ngsF).
 
-However, since our data is low-depth, genotypes cannot be assigned with high confidence and therefore we want to use **genotype posterior probabilities** instead, using options `-doGeno 8 -doPost 1`.
+For instance, recalling what previously shown as input/output/filtering options, a command line to call genotypes would be:
+```
+# angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
+        -doGeno 3 -doPost 1
+	...
+``` 
+This command will not run, but it serves as an illustration of how to set parameters for genotype calling.
 
 For more details and examples on genotype calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/genocall.md)
 
@@ -190,7 +260,7 @@ NB These frequency estimators requires major/minor -doMajorMinor
 
 Therefore, the estimation of allele frequencies requires the specification of how to assign the major and minor alleles (if biallelic).
 ```
-$ANGSD/angsd -doMajorMinor
+angsd -doMajorMinor
 ...
         -doMajorMinor   0
         1: Infer major and minor from GL
@@ -204,7 +274,7 @@ $ANGSD/angsd -doMajorMinor
 
 Finally, you need to specify which genotype likelihood model to use.
 ```
-$ANGSD/angsd -GL
+angsd -GL
 ...
         -GL=0:
         1: SAMtools
@@ -236,56 +306,84 @@ Therefore we can consider assigning as SNPs sites whose estimated allele frequen
 
 --------------------------------
 
-Back to our example, firstly, we need to compute genotype posterior probabilities for all samples with ANGSD only on putative polymorphic sites.
+Back to our example, we need to compute genotype posterior probabilities for all samples with ANGSD only on putative polymorphic sites.
 
-ANGSD can also perform some basic filtering of the data.
-These filters are based on:
-
-* quality and depth, see [here](http://www.popgen.dk/angsd/index.php/Filters)
-* SNP quality, see [here](http://popgen.dk/angsd/index.php/SnpFilters)
-* sites, see [here](http://popgen.dk/angsd/index.php/Sites)
-
-For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/filtering.md)
-
-Let us build our command line.
-Recall what we defined for 
-
-As an illustration,...
-
+First, let us see how to perform a hard SNP/genotype calling in ANGSD, assigning individual genotypes.
 ```
-$ANGSD/angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
+        -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
+        -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
+        -SNP_pval 1e-3 \
+        -doGeno 3 -doPost 1 &> /dev/null
+```
+Open the output file:
+```
+less -S Results/ALL.geno.gz
+```
+
+However, since our data is low-depth, genotypes cannot be assigned with high confidence and therefore we want to use **genotype posterior probabilities** instead, using options `-doGeno 8(or32) -doPost 1`.
+
+Let us build our command line, recalling what we have previously defined.
+```
+angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
         -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
         -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
         -SNP_pval 1e-3 \
         -doGeno 32 -doPost 1 &> /dev/null
-
+```
+Unzip the results but you cannot open it since it is in binary format:
+```
 gunzip Results/ALL.geno.gz
-
-N_SITES=`zcat Results/ALL.mafs.gz | tail -n+2 | wc -l`
-echo $N_SITES
-
-$NGSTOOLS/ngsPopGen/ngsCovar -probfile Results/ALL.geno -outfile Results/ALL.covar -nind 60 -nsites $N_SITES -call 0 -norm 0 &> /dev/null
-
-Rscript -e 'write.table(cbind(seq(1,60),rep(1,60),c(rep("LWK",20),rep("TSI",20),rep("PEL",20))), row.names=F, sep=" ", col.names=c("FID","IID","CLUSTER"), file="Results/ALL.clst", quote=F)'
-
-Rscript $NGSTOOLS/scripts/plotPCA.R -i Results/ALL.covar -c 1-2 -a Results/ALL.clst -o Results/ALL.pca.pdf
-
-evince Results/ALL.pca.pdf
-
 ```
 
-Therefore, PEL samples appear very close to EUR.
-The next step would be to compute admixture proportions in order to select a subset of putative Native American (unadmixed) samples.
+We need to define how many sites we have.
+For instance we can inspect the file with allele frequencies:
+```
+less -S Results/ALL.mafs.gz
+```
 
-OPTIONAL
+How many sites do we have?
+```
+N_SITES=`zcat Results/ALL.mafs.gz | tail -n+2 | wc -l`
+echo $N_SITES
+```
+
+------------------
+
+Now we can finally perform a PCA but first estimating the covariance matrix using this tool available in ngsTools:
+```
+ngsCovar -probfile Results/ALL.geno -outfile Results/ALL.covar -nind 60 -nsites $N_SITES -call 0 -norm 0 &> /dev/null
+```
+
+We perform an eigenvector decomposition and plot the resulting map:
+```
+Rscript -e 'write.table(cbind(seq(1,60),rep(1,60),c(rep("LWK",20),rep("TSI",20),rep("PEL",20))), row.names=F, sep=" ", col.names=c("FID","IID","CLUSTER"), file="Results/ALL.clst", quote=F)'
+Rscript $DIR/Scripts/plotPCA_ngstools.R -i Results/ALL.covar -c 1-2 -a Results/ALL.clst -o Results/ALL.pca.pdf
+```
+Finally, open the image:
+```
+evince Results/ALL.pca.pdf
+```
+
+Comment on the results.
+
+Therefore, PEL samples appear very close to EUR but separate.
+Indeed, among all Latin American populations present in the 1000G project, Peruvians are the least admixed population.
+We can either use all these samples or, as described below, compute admixture proportions in order to select a subset of putative Native American (unadmixed) samples.
+For the rest of the exercises, we are going to use all PEL sample.
+
+-----------------------
+
+**OPTIONAL**
 
 An alternative approach would be to compute genetic distances first, and then perform a MDS on those.
 Here the command lines needed to perform such tasks.
 
 ```
 # Assuming HWE, without filtering based on probabilities, with SNP calling
-$ANGSD/angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
         -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
         -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
@@ -302,14 +400,14 @@ cat pops.label
 
 #With [ngsDist](https://github.com/fgvieira/ngsDist) we can compute pairwise genetic distances without relying on individual genotype calls.
 N_SAMPLES=60
-$NGSDIST/ngsDist -verbose 1 -geno Results/ALL.geno.gz -probs -n_ind $N_SAMPLES -n_sites $N_SITES -labels pops.label -o Results/ALL.dist -n_threads 4
+ngsDist -verbose 1 -geno Results/ALL.geno.gz -probs -n_ind $N_SAMPLES -n_sites $N_SITES -labels pops.label -o Results/ALL.dist -n_threads 4
 less -S Results/ALL.dist
 
 #From these distances, we can perform a MDS analysis and investigate the population genetic structure of our samples.
 tail -n +3 Results/ALL.dist | head -n $N_SAMPLES | Rscript --vanilla --slave Scripts/get_MDS.R --no_header --data_symm -n 4 -m "mds" -o Results/ALL.mds
 
 #We can visualise the pairwise genetic distances in form of a tree (in Newick format).
-$FASTME -D 1 -i Results/ALL.dist -o Results/ALL.tree -m b -n b &> /dev/null
+fastme -D 1 -i Results/ALL.dist -o Results/ALL.tree -m b -n b &> /dev/null
 cat Results/ALL.tree
 
 #We can some R packages to plot the resulting tree.
@@ -329,7 +427,7 @@ This is suitable for low-depth data.
 ngsAdmix requires genotype likelihoods in BEAGLE format as input.
 We can compute these quantities with ANGSD with `-doGlf 2`.
 ```
-$ANGSD/angsd -P 4 -b ALL_noCHB.bamlist -ref $REF -out Results/ALL \
+angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
         -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
         -GL 1 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 \
@@ -341,7 +439,7 @@ We assume 3 ancestral populations (Europeans, Africans and Native Americans) mak
 Therefore we compute admixture proportions with 3 ancestral components.
 ```
 K=3
-$NGSADMIX -likes Results/ALL.beagle.gz -K $K -outfiles Results/ALL.admix.K$K -P 4 -minMaf 0.02
+ngsdadmix -likes Results/ALL.beagle.gz -K $K -outfiles Results/ALL.admix.K$K -P 4 -minMaf 0.02
 ```
 
 Combine samples IDs with admixture proportions and inspect the results.
@@ -369,7 +467,4 @@ Then, we could perform all analyses considering only these samples.
 ------------------------
 
 [HOME](https://github.com/mfumagalli/Weggis)
-
-
-
 
