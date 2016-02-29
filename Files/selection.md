@@ -235,7 +235,7 @@ Rscript $DIR/Scripts/plot2DSFS.R Results/CHB.PEL.sfs 20 20
 ```
 
 -----------------------
-i
+
 The 2D-SFS will be used as prior information for the joint allele frequency probabilities at each site.
 From these probabilities we will calculate the population branch statistic (PBS) using the PEL as target population and CHB and TSI as reference populations.
 Our goal is to detect selection in PEL in terms of allele frequency differentiation.
