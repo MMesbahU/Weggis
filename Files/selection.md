@@ -235,13 +235,18 @@ Rscript $DIR/Scripts/plot2DSFS.R Results/CHB.PEL.sfs 20 20
 ```
 
 -----------------------
+i
+The 2D-SFS will be used as prior information for the joint allele frequency probabilities at each site.
+From these probabilities we will calculate the population branch statistic (PBS) using the PEL as target population and CHB and TSI as reference populations.
+Our goal is to detect selection in PEL in terms of allele frequency differentiation.
 
-PBS can be calculated (in windows) using the following commands:
+Specifically, we are computing a slinding windows scan, with windows of 50kbp and a step of 10kbp.
+This can be achieved using the following commands:
 ```
 # this command will compute per-site FST indexes
-$ANGSD/misc/realSFS fst index Results/TSI.saf.idx Results/CHB.saf.idx Results/PEL.saf.idx -sfs Results/TSI.CHB.sfs -sfs Results/TSI.PEL.sfs -sfs Results/CHB.PEL.sfs -fstout Results/PEL.pbs &> /dev/null
-# the nex command will perform a sliding-window analysis
-$ANGSD/misc/realSFS fst stats2 Results/PEL.pbs.fst.idx -win 50000 -step 10000 > Results/PEL.pbs.txt
+realSFS fst index Results/TSI.saf.idx Results/CHB.saf.idx Results/PEL.saf.idx -sfs Results/TSI.CHB.sfs -sfs Results/TSI.PEL.sfs -sfs Results/CHB.PEL.sfs -fstout Results/PEL.pbs &> /dev/null
+# the next command will perform a sliding-window analysis
+realSFS fst stats2 Results/PEL.pbs.fst.idx -win 50000 -step 10000 > Results/PEL.pbs.txt
 ```
 
 Have a look at the output file:
@@ -254,9 +259,12 @@ region	chr	midPos	Nsites	Fst01	Fst02	Fst12	PBS0	PBS1	PBS2
 ```
 Where are interested in the column `PB2` which gives the PBS values assuming PEL (coded here as 2) being the target population.
 
+We are also provided with the individual FST values.
+You can see that high values of PBS2 are indeed associated with high values of both Fst02 and Fst12 but not Fst01.
+
 We can plot the results along with the gene annotation.
 ```
-Rscript Scripts/plotPBS.R Results/PEL.pbs.txt Results/PEL.pbs.pdf
+Rscript $DIR/Scripts/plotPBS.R Results/PEL.pbs.txt Results/PEL.pbs.pdf
 ```
 
 Compare to the case of called genotypes with default values.
