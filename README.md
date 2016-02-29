@@ -10,12 +10,15 @@ Part 1: Detection of signatures of selection
 
 ## Material
 
-To download and access all the material in this web page use [git](http://git-scm.com/):
+The data has been already downloaded and it is provided here `/gdc_home5/groups/bag2016/wednesday`.
+To download and access all the material in this web page locally use [git](http://git-scm.com/).
+Uncomment it before running it.
 ```
-git clone https://github.com/mfumagalli/Weggis.git
-cd Weggis
+# git clone https://github.com/mfumagalli/Weggis.git
+# cd Weggis
 # git pull # to be sure you have the latest version, if so you should see "Already up-to-date."
 ```
+
 
 ## Data
 
@@ -35,7 +38,7 @@ Uncomment it before running it.
 Data will be saved (but not pushed to git main repository) in `Data` folder.
 If you do not use the provided script, please make sure you create `Results` folder:
 ```
-# mkdir Results
+mkdir Results
 ```
 
 Additional scripts are be provided in the `Scripts/` folder.
@@ -44,13 +47,11 @@ Additional scripts are be provided in the `Scripts/` folder.
 
 ### Lecture
 
-Slides are available in [pdf]() and [pptx]() format.
-
-The effect of selection on the genome + Methods to detect selection signals (positive, negative, balancing)
-
-The problem of assessing significance + Critical discussion of case studies
-
-Summary statistics from low-depth data
+Slides are available in [pdf]() and [pptx]() format:
+* The effect of selection on the genome
+* Methods to detect selection signals
+* The problem of assessing significance
+* Summary statistics from low-depth data
 
 ### Practical
 
@@ -73,6 +74,6 @@ This material provides some guidelines on how to perform SNP and genotype callin
 
 ## Credits
 
-Some materials have been borrowed (and then adapted) from [Thorfinn Korneliussen](http://scholar.google.co.uk/citations?user=-YNWF4AAAAAJ&hl=en), [Anders Albrechtsen](http://popgen.dk/albrecht/web/WelcomePage.html), [Tyler Linderoth](http://scholar.google.com/citations?user=dTuxmzkAAAAJ&hl=en), [Filipe G. Vieira](http://scholar.google.com/citations?user=gvZmPNQAAAAJ&hl=en), [Dean Ousby](https://www.linkedin.com/in/deanousby), and possibly many more.
+Some materials have been borrowed (and then adapted) from [Thorfinn Korneliussen](http://scholar.google.co.uk/citations?user=-YNWF4AAAAAJ&hl=en), [Anders Albrechtsen](http://popgen.dk/albrecht/web/WelcomePage.html), [Tyler Linderoth](http://scholar.google.com/citations?user=dTuxmzkAAAAJ&hl=en), [Filipe G. Vieira](http://scholar.google.com/citations?user=gvZmPNQAAAAJ&hl=en), [Dean Ousby](https://www.linkedin.com/in/deanousby), [Javier Mendoza](https://www.ucl.ac.uk/candela/candela-news/new-fellow-javiermendoza)  and possibly many more.
 
 

@@ -21,27 +21,25 @@ Is positive selection on FADS genes targeting Native American populations as wel
 
 If so, is selection acting on the same variants as in Inuit?
 
-Can we test which haplotypes selection (if any) is acting on?
+Can we assess on which haplotypes selection (if any) is acting on?
 
 *CHALLENGES*
 - Admixed population
 - Low-depth sequencing data
+- ...
 
 *PLAN OF ACTION*
 
 - Retrieve genomic data for 1000 Genomes Project for Africans, Europeans, East Asians and Americans (low-depth)
-- Investigate population structure of American samples relating to Europeans and Africans [optional]
+- Investigate population structure of American samples relating to Europeans and Africans
 - Select individuals with high Native American ancestry [optional]
 - Perfom a sliding windows scan based on allele frequency differentiation and nucleotide diversity
-- Compute allele frequencies for SNPs of interest in Native Americans, Europeans and Africans
+- Compute allele frequencies for SNPs of interest in Native Americans, Europeans and Africans [optional]
 - Assess statistical significance through simulations
-- Test for extended haplotype homozygoisty based on high-depth sequencing data
+- Test for extended haplotype homozygosity based on high-depth sequencing data
 
 ------------------------
 
 [HOME](https://github.com/mfumagalli/Weggis)
-
-
-
 
 

@@ -12,8 +12,53 @@ More information about its rationale and implemented methods can be found [here]
 
 According to its website *ANGSD is a software for analyzing next generation sequencing data. The software can handle a number of different input types from mapped reads to imputed genotype probabilities. Most methods take genotype uncertainty into account instead of basing the analysis on called genotypes. This is especially useful for low and medium depth data. The software is written in C++ and has been used on large sample sizes. This program is not for manipulating BAM/CRAM files, but solely a tool to perform various kinds of analysis. We recommend the excellent program SAMtools for outputting and modifying bamfiles.*
 
+By the end of this part you will learn:
+* how ANGSD handles input and output files
+* how to build up a command line
+* how to perform SNP and genotype calling
+* how to estimate summary statistics and assess population structure taking data uncertainty into account.
+
+### Preparation
+
+Please set the path for all programs and data we will be using.
+As an example these are my paths.
+```
+ANGSD=/data/data/Software/angsd
+SAMTOOLS=/data/data/Software/samtools-1.3
+NGSDIST=/data/Software/ngsDist
+NGSTOOLS=/data/Software/ngsTools
+NGSADMIX=/data/data/Software/NGSadmix/NGSadmix
+FASTME=/data/data/Software/fastme-2.1.4/src/fastme
+```
+However, if these paths have been sym-linked to your /usr/bin, they can be called by simply typing their name, e.g. `angsd`.
+
+If you downloaded the data using the provided script, this is what you should specify.
+```
+# REF=Data/hs37d5.fa
+# ANC=Data/hg19ancNoChr.fa
+```
+otherwise these files can be found here:
+```
+REF=/gdc_home5/groups/bag2016/wednesday/Data/hs37d5.fa
+ANC=/gdc_home5/groups/bag2016/wednesday/Data/hg19ancNoChr.fa
+```
+
+Again, we will use 80 BAM files of human samples (of African, European, East Asian, and Native American descent), a reference genome, and putative ancestral sequence.
+The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set, encompassing the FADS gene family.
+Also, to make things more interesting, we have downsampled our data to an average mean depth of 2X.
+
+--------------------------
+
+ANGSD can accept several input files, as described [here](http://popgen.dk/angsd/index.php/Input):
+
+* BAM/CRAM
+* Pileup
+* Genotype likelihood/probability files
+* VCF
+
 To see a full list of options in ANGSD type:
 ```
+ANGSD=/data/data/Software/angsd
 $ANGSD/angsd
 ```
 and you should see something like
@@ -51,43 +96,6 @@ Examples:
         Estimate MAF for bam files in 'list'
                 './angsd -bam list -GL 2 -doMaf 2 -out RES -doMajorMinor 1'
 ```
-
-By the end of this short tutorial you will learn:
-* how ANGSD handles input and output files
-* how to build up a command line
-* how to perform SNP and genotype calling
-* how to estimate summary statistics taking data uncertainty into account.
-
-### Preparation
-
-Please set the path for all programs and data we will be using.
-As an example these are my paths.
-```
-ANGSD=/data/data/Software/angsd
-SAMTOOLS=/data/data/Software/samtools-1.3
-NGSDIST=/data/Software/ngsDist
-NGSTOOLS=/data/Software/ngsTools
-NGSADMIX=/data/data/Software/NGSadmix/NGSadmix
-FASTME=/data/data/Software/fastme-2.1.4/src/fastme
-```
-However, if these paths have been sym-linked to your /usr/bin, they can be called by simply typing their name, e.g. `angsd`.
-
-If you downloaded the data using the provided script, this is what you should specify.
-```
-REF=Data/hs37d5.fa
-ANC=Data/hg19ancNoChr.fa
-```
-
-Again, we will use 80 BAM files of human samples (of African, European, East Asian, and Native American descent), a reference genome, and putative ancestral sequence.
-The human data represents a small genomic region (1MB on chromosome 11) extracted from the 1000 Genomes Project data set, encompassing the FADS gene family.
-Also, to make things more interesting, we have downsampled our data to an average mean depth of 2X.
-
-ANGSD can accept several input files, as described [here](http://popgen.dk/angsd/index.php/Input):
-
-* BAM/CRAM
-* Pileup
-* Genotype likelihood/probability files
-* VCF
 
 
 --------------------
