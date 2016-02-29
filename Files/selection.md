@@ -21,9 +21,11 @@ From these quantities ANGSD computes posterior probabilities of Sample Allele Fr
 Finally, an estimate of the SFS is computed.
 
 These steps can be accomplished in ANGSD using `-doSaf 1/2` options and the program `realSFS`.
+Again, be sure you are using the latest version of ANGSD (>0.900), by typing `angds` and reading the first lines.
+If not, type `module unload ngsTools` and then `module load angsd`
 
 ```
-$ANGSD/angsd -doSaf
+angsd -doSaf
 ...
 -doSaf		0
 	1: perform multisample GL estimation
@@ -43,31 +45,36 @@ NB:
 
 The SFS is typically computed for each population separately.
 We need to slightly modify the filtering options as now each population has 20 samples. 
-So now we set `-minInd 10 -setMinDepth 10 -setMaxDepth 100`.
+So now we set `-minInd 20 -setMinDepth 20 -setMaxDepth 200`.
 Also, we want to estimate the unfolded SFS and we use a putative ancestral sequence to polarise our alleles (to ancestral and derived states).
 
+We cycle across all populations:
 ```
 for POP in LWK TSI CHB PEL
 do
         echo $POP
-        $ANGSD/angsd -P 4 -b $POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
+        angsd -P 4 -b $DIR/$POP.bamlist -ref $REF -anc $ANC -out Results/$POP \
 		-uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -baq 1 \
-		-minMapQ 20 -minQ 20 -minInd 10 -setMinDepth 10 -setMaxDepth 200 -doCounts 1 \
+		-minMapQ 20 -minQ 20 -minInd 15 -setMinDepth 20 -setMaxDepth 200 -doCounts 1 \
 		-GL 1 -doSaf 1 &> /dev/null
 done
 ```
 
 Have a look at the output file.
 ```
-$ANGSD/misc/realSFS print Results/PEL.saf.idx | less -S
+realSFS print Results/PEL.saf.idx | less -S
 ```
 These values represent the sample allele frequency likelihoods at each site, as seen during the lecture.
+So the first value (after the chromosome and position columns) is the likelihood of having 0 copies of the derived allele, the second indicates the probability of having 1 copy and so on.
+Note that these values are in log format and scaled so that the maximum is 0.
+
+Can you spot any site which is likely to be variable?
+What does this mean? It means that you should look for sites where the highest likelihood does not correspond to allele frequencies of 0 or 1.
 
 The next step would be to use these likelihoods and estimate the overall SFS.
 This is achieved by the program `realSFS`.
-
 ```
-$ANGSD/misc/realSFS
+realSFS
 	-> ---./realSFS------
 	-> EXAMPLES FOR ESTIMATING THE (MULTI) SFS:
 
@@ -103,18 +110,31 @@ This command will estimate the SFS for each population:
 for POP in LWK TSI CHB PEL
 do
         echo $POP
-        $ANGSD/misc/realSFS Results/$POP.saf.idx 2> /dev/null > Results/$POP.sfs
+        realSFS Results/$POP.saf.idx -P 4 2> /dev/null > Results/$POP.sfs
 done
 ```
+The output will be saved in Results/POP.sfs files.
 
-Have a look at the output file:
+You can now have a look at the output file, for instance for the African (LWK) samples:
 ```
-cat Results/PEL.sfs
+cat Results/LWK.sfs
 ```
+The first value represent the expected number of sites with derived allele frequency equal to 0, the second column the expected number of sites with frequency equal to 1 and so on.
+
 How many values do you expect?
 ```
-awk -F' ' '{print NF; exit}' Results/PEL.sfs 
+awk -F' ' '{print NF; exit}' Results/LWK.sfs 
 ```
+Indeed this represents the unfolded spectrum, so it has 2N+1 values with N diploid individuals.
+
+Why is it so bumpy? Why there are low/zero values?
+
+...thinking...
+
+This maximum likelihood estimation of the SFS should be performed at the whole-genome level to have enough information for the algorithm to converge.
+However, for practical reasons, here we could not use large genomic regions.
+Also, as we will see later, this region is not really a proxy for neutral evolution so the SFS is not expected to behave neutrally.
+Nevertheless, these SFS should be a reasonable prior to be used for estimation of summary statistics.
 
 ------------------------------
 
@@ -122,8 +142,10 @@ awk -F' ' '{print NF; exit}' Results/PEL.sfs
 
 Let us plot the SFS for each pop using this simple R script.
 ```
-Rscript Scripts/plotSFS.R Results/LWK.sfs Results/TSI.sfs Results/CHB.sfs Results/PEL.sfs
-evince Results/LWK_TSI_CHB_PEL.pdf
+Rscript $DIR/Scripts/plotSFS.R Results/LWK.sfs Results/TSI.sfs Results/CHB.sfs Results/PEL.sfs
+## copy the file to your local machine to inspect it
+# scp mfuma@gdcsrv1.ethz.ch:/gdc_home4/mfuma/Wednesday/Results/LWK_TSI_CHB_PEL.pdf .
+# open LWK_TSI_CHB_PEL.pdf
 ```
 Do they behave like expected? 
 Which population has more SNPs?
@@ -131,10 +153,10 @@ Which population has a higher proportion of common (not rare) variants?
 Why is it bumpy?
 
 It is sometimes convenient to generate bootstrapped replicates of the SFS, by sampling with replacements genomic segments.
-This could be used for instance to get confidence intervals when using the SFS for demographic inferences (as you may seen in the next days).
+This could be used for instance to get confidence intervals when using the SFS for demographic inferences.
 This can be achieved in ANGSD using:
 ```
-$ANGSD/misc/realSFS Results/PEL.saf.idx -bootstrap 10  2> /dev/null > Results/PEL.boots.sfs
+realSFS Results/PEL.saf.idx -bootstrap 10  2> /dev/null > Results/PEL.boots.sfs
 cat Results/PEL.boots.sfs
 ```
 This command may take some time.
@@ -157,7 +179,7 @@ The 2D-SFS between all populations and PEL are computed with:
 for POP in LWK TSI CHB
 do
         echo $POP
-	$ANGSD/misc/realSFS -P 4 Results/$POP.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/$POP.PEL.sfs
+	realSFS -P 4 Results/$POP.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/$POP.PEL.sfs
 done
 ```
 
@@ -168,13 +190,15 @@ less -S Results/LWK.PEL.sfs
 You can plot it, but you need to define how many samples you have per population.
 ```
 Rscript Scripts/plot2DSFS.R Results/LWK.PEL.sfs 20 20
-evince Results/LWK.PEL.sfs.pdf
+# copy to your local machine and open it 
+# scp mfuma@gdcsrv1.ethz.ch:/gdc_home4/mfuma/Wednesday/Results/LWK.PEL.sfs.pdf .
+# open Results/LWK.PEL.sfs.pdf
 ```
 
 You can even estimate SFS with higher order of magnitude.
 This command may take some time.
 ```
-$ANGSD/misc/realSFS -P 4 Results/LWK.saf.idx Results/TSI.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/LWK.TSI.PEL.sfs
+realSFS -P 4 Results/LWK.saf.idx Results/TSI.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/LWK.TSI.PEL.sfs
 ```
 
 ------------------------------------
@@ -189,10 +213,28 @@ Therefore, we need to compute also the 2D-SFS between TSI and CHB and PEL (if no
 ```
 for POP in TSI CHB
 do
-        $ANGSD/misc/realSFS -P 4 Results/$POP.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/$POP.PEL.sfs
+	echo Results/$POP.PEL.sfs
+        realSFS -P 4 Results/$POP.saf.idx Results/PEL.saf.idx 2> /dev/null > Results/$POP.PEL.sfs
 done
-$ANGSD/misc/realSFS -P 4 Results/TSI.saf.idx Results/CHB.saf.idx 2> /dev/null > Results/TSI.CHB.sfs
+echo Results/TSI.CHB.sfs
+realSFS -P 4 Results/TSI.saf.idx Results/CHB.saf.idx 2> /dev/null > Results/TSI.CHB.sfs
 ```
+
+Look at the output file:
+```
+less -S Results/CHB.PEL.sfs
+```
+The output file is a flatten matrix, where each value is the count of sites with the corresponding joint frequency ordered as [0,0] [0,1] and so on.
+
+You can also plot it, but you need to define how many samples you have per population.
+```
+Rscript $DIR/Scripts/plot2DSFS.R Results/CHB.PEL.sfs 20 20
+# copy to your local machine and open it
+# scp mfuma@gdcsrv1.ethz.ch:/gdc_home4/mfuma/Wednesday/Results/CHB.PEL.sfs.pdf .
+# open CHB.PEL.sfs.pdf
+```
+
+-----------------------
 
 PBS can be calculated (in windows) using the following commands:
 ```
@@ -216,6 +258,8 @@ We can plot the results along with the gene annotation.
 ```
 Rscript Scripts/plotPBS.R Results/PEL.pbs.txt Results/PEL.pbs.pdf
 ```
+
+Compare to the case of called genotypes with default values.
 
 The next step would be to assess whether such pattern of allelic differentiation is expected given a demographic model.
 
