@@ -47,7 +47,7 @@ Additional scripts are be provided in the `Scripts/` folder.
 
 ### Lecture
 
-Slides are available in [pdf]() and [pptx]() format:
+Slides are available here [part1](https://github.com/mfumagalli/Weggis/blob/master/Files/slides_selection_pt1.pdf) and [part2](https://github.com/mfumagalli/Weggis/blob/master/Files/slides_selection_pt2.pdf):
 * The effect of selection on the genome
 * Methods to detect selection signals
 * The problem of assessing significance

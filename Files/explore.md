@@ -107,8 +107,6 @@ These filters are based on:
 * SNP quality, see [here](http://popgen.dk/angsd/index.php/SnpFilters)
 * sites, see [here](http://popgen.dk/angsd/index.php/Sites)
 
-For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/filtering.md)
-
 Let us build our command line.
 First we need to define input and output files:
 ```
@@ -136,11 +134,11 @@ Then, we define filters based on mapping and base quality, as well as depth.
         -minMapQ 20 -minQ 20 -minInd 30 -setMinDepth 30 -setMaxDepth 300 -doCounts 1 \
 ...
 ```
-Specifically here we analyse only reads with a minimum mapping quality of 20 , and bases with a minimum quality of 20 (the values are in phred scores).
+Specifically here we analyse only reads with a minimum mapping quality of 20, and bases with a minimum quality of 20 (the values are in phred scores).
 Also we specify that we are analysing only sites where we have data for half of the individuals (30) and minimum and maximum TOTAL depth of 30 and 300, respectively.
 `-doCounts 1` simply forces the calculation of depth.
 
-For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/filtering.md)
+For more details and examples on how to filtering data with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/blob/master/Files/filtering.md).
 
 Next we are going to illustrate other features in ANGSD by analyses of population structure within our sample.
 
@@ -205,7 +203,7 @@ For instance, recalling what previously shown as input/output/filtering options,
 ``` 
 This command will not run, but it serves as an illustration of how to set parameters for genotype calling.
 
-For more details and examples on genotype calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/genocall.md)
+For more details and examples on genotype calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/blob/master/Files/genocall.md).
 
 --------------------------------
 
@@ -287,7 +285,7 @@ There are two main ways to call SNPs using ANGSD with these options:
 ```
 Therefore we can consider assigning as SNPs sites whose estimated allele frequency is above a certain threhsold (e.g. the frequency of a singleton) or whose probability of being variable is above a specified value.
 
-For more details and examples on SNP calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/snpcall.md)
+For more details and examples on SNP calling with ANGSD see [here](https://github.com/mfumagalli/WoodsHole/blob/master/Files/filtering.md).
 
 --------------------------------
 
@@ -328,7 +326,7 @@ angsd -P 4 -b $DIR/ALL_noCHB.bamlist -ref $REF -out Results/ALL \
 ```
 Open the file:
 ```
-less -s Results/ALL.geno.gz
+less -S Results/ALL.geno.gz
 ```
 and you will see that now we have probabilities appended to all called genotypes.
 
